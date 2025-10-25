@@ -1,0 +1,20 @@
+# Root .gitignore for AI-Hackathon-Fall25
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+backend-PY/venv/
+venv/
+.venv/
+
+# Pip cache and build dirs
+pip-wheel-metadata/
+build/
+dist/
+
+# IDE/editor config
+.vscode/
+.idea/
