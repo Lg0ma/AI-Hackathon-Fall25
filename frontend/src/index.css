@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
+
 :root {
   --primary-dark: #2c2a4a;
   --primary-blue: #007bff;

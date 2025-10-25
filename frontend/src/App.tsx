@@ -3,6 +3,7 @@ import LandingPage from './pages/LandingPage';
 import InterviewPage from './pages/InterviewPage';
 import CreateAccount from './pages/CreateAccount';
 import LoginAccount from './pages/LoginAccount';
+import Home from './pages/Home';
 import QuestionnairePage from './pages/QuestionnairePage';
 import './App.css';
 import './index.css';
@@ -16,6 +17,7 @@ function App() {
         <Route path="/create-account" element={<CreateAccount />} />
         <Route path="/questionnaire" element={<QuestionnairePage />} />
         <Route path="/login" element={<LoginAccount />} />
+        <Route path="/home" element={<Home />} />
       </Routes>
     </BrowserRouter>
   );
