@@ -25,3 +25,4 @@ python-dotenv
 openai
 pydantic
 python-multipart
+bcrypt
