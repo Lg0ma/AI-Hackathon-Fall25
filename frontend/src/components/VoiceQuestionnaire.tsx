@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import './VoiceQuestionnaire.css';
 
 interface VoiceQuestionnaireProps {
   phoneNumber: string;
@@ -164,74 +163,131 @@ const VoiceQuestionnaire: React.FC<VoiceQuestionnaireProps> = ({ phoneNumber, on
   };
 
   return (
-    <div className="create-account-container">
-      <div className="form-card">
-        <h1>Tell us more about yourself</h1>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-8">
+      <div className="bg-white p-8 rounded-2xl shadow-xl w-[90%] max-w-[600px] text-center">
+        <h1 className="text-3xl font-bold text-gray-900 mb-6">Tell us more about yourself</h1>
         {questions.length > 0 && currentQuestionIndex < questions.length && !allResponses ? (
-          <div className="question-container">
-            <p className="question-text">Question {currentQuestionIndex + 1}: {questions[currentQuestionIndex]}</p>
-            <div className="input-mode-selector">
-              <button onClick={() => setInputMode('voice')} className={inputMode === 'voice' ? 'active' : ''}>Voice</button>
-              <button onClick={() => setInputMode('text')} className={inputMode === 'text' ? 'active' : ''}>Text</button>
+          <div className="flex flex-col items-center">
+            <p className="text-2xl text-gray-800 mb-6">
+              Question {currentQuestionIndex + 1}: {questions[currentQuestionIndex]}
+            </p>
+            
+            <div className="flex justify-center mb-6">
+              <button
+                onClick={() => setInputMode('voice')}
+                className={`mx-2 py-2 px-4 border rounded-full font-medium transition-all duration-200 ${
+                  inputMode === 'voice'
+                    ? 'bg-blue-600 text-white border-blue-600'
+                    : 'bg-transparent border-blue-600 text-blue-600 hover:bg-blue-50'
+                }`}
+              >
+                Voice
+              </button>
+              <button
+                onClick={() => setInputMode('text')}
+                className={`mx-2 py-2 px-4 border rounded-full font-medium transition-all duration-200 ${
+                  inputMode === 'text'
+                    ? 'bg-blue-600 text-white border-blue-600'
+                    : 'bg-transparent border-blue-600 text-blue-600 hover:bg-blue-50'
+                }`}
+              >
+                Text
+              </button>
             </div>
 
             {inputMode === 'voice' ? (
               <>
-                <div className="recording-controls">
+                <div className="mb-6">
                   {!isRecording && !hasRecordedAnswer && (
-                    <button onClick={startRecording}>Start Recording</button>
+                    <button
+                      onClick={startRecording}
+                      className="py-3 px-6 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-blue-300"
+                    >
+                      Start Recording
+                    </button>
                   )}
                   {isRecording && (
-                    <button className="stop" onClick={stopRecording}>Stop Recording</button>
+                    <button
+                      onClick={stopRecording}
+                      className="py-3 px-6 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-red-300"
+                    >
+                      Stop Recording
+                    </button>
                   )}
                 </div>
 
                 {recordedAudioUrl && (
-                  <div className="audio-playback">
-                    <p>Your recording:</p>
-                    <audio controls src={recordedAudioUrl}></audio>
+                  <div className="mb-6 w-full">
+                    <p className="mb-2 font-medium text-gray-800">Your recording:</p>
+                    <audio controls src={recordedAudioUrl} className="w-full"></audio>
                     {transcribedText && (
-                      <p className="transcribed-text"><b>Transcribed:</b> {transcribedText}</p>
+                      <p className="mt-4 italic text-gray-600">
+                        <b>Transcribed:</b> {transcribedText}
+                      </p>
                     )}
                   </div>
                 )}
 
-                <div className="button-group">
+                <div className="flex gap-4 mb-6">
                   {hasRecordedAnswer && (
                     <>
-                      <button onClick={handleNextQuestion} disabled={isProcessing}>
+                      <button
+                        onClick={handleNextQuestion}
+                        disabled={isProcessing}
+                        className="py-3 px-6 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-blue-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
                         {isProcessing ? 'Processing...' : 'Next Question'}
                       </button>
-                      <button className="retry" onClick={handleRetry} disabled={isProcessing}>Retry</button>
+                      <button
+                        onClick={handleRetry}
+                        disabled={isProcessing}
+                        className="py-3 px-6 bg-gray-600 text-white font-semibold rounded-lg hover:bg-gray-700 transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Retry
+                      </button>
                     </>
                   )}
                 </div>
               </>
             ) : (
-              <div className="text-input-container">
-                <textarea value={textAnswer} onChange={(e) => setTextAnswer(e.target.value)} placeholder="Type your answer here..." />
-                <button onClick={handleTextSubmit} disabled={isProcessing}>
+              <div className="flex flex-col items-center gap-4 w-full">
+                <textarea
+                  value={textAnswer}
+                  onChange={(e) => setTextAnswer(e.target.value)}
+                  placeholder="Type your answer here..."
+                  className="w-full max-w-[500px] min-h-[100px] p-3 border border-gray-300 rounded-lg text-base font-inherit focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <button
+                  onClick={handleTextSubmit}
+                  disabled={isProcessing}
+                  className="w-full max-w-[500px] py-3 px-6 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-blue-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
                   {isProcessing ? 'Processing...' : 'Submit'}
                 </button>
               </div>
             )}
           </div>
         ) : allResponses ? (
-          <div className="completion-screen">
-            <h2>Thank you!</h2>
-            <h3>Your Responses:</h3>
-            <div className="responses-grid">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Thank you!</h2>
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">Your Responses:</h3>
+            <div className="grid grid-cols-1 gap-4 w-full mt-4 text-left">
               {Object.entries(allResponses).map(([question, answer]) => (
-                <div key={question} className="response-item">
-                  <strong>{question}</strong>
-                  <p>{answer}</p>
+                <div key={question} className="bg-gray-50 p-4 rounded-lg">
+                  <strong className="block mb-2 text-blue-600">{question}</strong>
+                  <p className="text-gray-700">{answer}</p>
                 </div>
               ))}
             </div>
-            <button className="back-to-home-btn" onClick={onComplete}>Finish</button>
+            <button
+              onClick={onComplete}
+              className="mt-6 py-3 px-6 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-blue-300"
+            >
+              Finish
+            </button>
           </div>
         ) : (
-          <p>Loading questions...</p>
+          <p className="text-gray-600">Loading questions...</p>
         )}
       </div>
     </div>
