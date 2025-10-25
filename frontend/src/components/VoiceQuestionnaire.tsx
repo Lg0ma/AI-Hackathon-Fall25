@@ -1,29 +1,25 @@
 import React, { useState, useEffect, useRef } from 'react';
-import './CreateAccount.css';
+import './VoiceQuestionnaire.css';
 
-interface CreateAccountProps {
-  setCreatingAccount: (value: boolean) => void;
+interface VoiceQuestionnaireProps {
+  phoneNumber: string;
+  onComplete: () => void;
 }
 
-const CreateAccount: React.FC<CreateAccountProps> = ({ setCreatingAccount }) => {
+const VoiceQuestionnaire: React.FC<VoiceQuestionnaireProps> = ({ phoneNumber, onComplete }) => {
   const [questions, setQuestions] = useState<string[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [responses, setResponses] = useState<string[]>([]);
   const [allResponses, setAllResponses] = useState<Record<string, string> | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [recordedAudioUrl, setRecordedAudioUrl] = useState<string | null>(null);
   const [hasRecordedAnswer, setHasRecordedAnswer] = useState(false);
   const [transcribedText, setTranscribedText] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [promptPassword, setPromptPassword] = useState(false);
-  const [password, setPassword] = useState('');
-  const [passwordSaved, setPasswordSaved] = useState(false);
   const [inputMode, setInputMode] = useState<'voice' | 'text'>('voice');
   const [textAnswer, setTextAnswer] = useState('');
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
-  const userIdRef = useRef<string>(Math.random().toString(36).substring(7));
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -122,7 +118,7 @@ const CreateAccount: React.FC<CreateAccountProps> = ({ setCreatingAccount }) => 
   const sendTextToBackend = async (text: string) => {
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/text-input/${userIdRef.current}/${currentQuestionIndex}`,
+        `http://127.0.0.1:8000/text-input/${phoneNumber}/${currentQuestionIndex}`,
         {
           method: 'POST',
           headers: {
@@ -136,9 +132,6 @@ const CreateAccount: React.FC<CreateAccountProps> = ({ setCreatingAccount }) => 
         setCurrentQuestionIndex(data.next_question_id);
       } else {
         setAllResponses(data.responses);
-        if (data.prompt_password) {
-          setPromptPassword(true);
-        }
       }
     } catch (error) {
       console.error('Error sending text to backend:', error);
@@ -151,7 +144,7 @@ const CreateAccount: React.FC<CreateAccountProps> = ({ setCreatingAccount }) => 
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/voice-input/${userIdRef.current}/${currentQuestionIndex}`,
+        `http://127.0.0.1:8000/voice-input/${phoneNumber}/${currentQuestionIndex}`,
         {
           method: 'POST',
           body: formData,
@@ -159,45 +152,21 @@ const CreateAccount: React.FC<CreateAccountProps> = ({ setCreatingAccount }) => 
       );
       const data = await response.json();
       setTranscribedText(data.transcribed_text);
-      setResponses((prev) => [...prev, data.message]);
 
       if (data.next_question_id !== undefined) {
         setCurrentQuestionIndex(data.next_question_id);
       } else {
         setAllResponses(data.responses);
-        if (data.prompt_password) {
-          setPromptPassword(true);
-        }
       }
     } catch (error) {
       console.error('Error sending audio to backend:', error);
     }
   };
 
-  const handlePasswordSave = async () => {
-    try {
-      const response = await fetch(`http://127.0.0.1:8000/create-password/${userIdRef.current}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ password })
-        }
-      );
-      const data = await response.json();
-      if (data.message) {
-        setPasswordSaved(true);
-      }
-    } catch (error) {
-      console.error('Error saving password:', error);
-    }
-  };
-
   return (
     <div className="create-account-container">
       <div className="form-card">
-        <h1>Create Your Account</h1>
+        <h1>Tell us more about yourself</h1>
         {questions.length > 0 && currentQuestionIndex < questions.length && !allResponses ? (
           <div className="question-container">
             <p className="question-text">Question {currentQuestionIndex + 1}: {questions[currentQuestionIndex]}</p>
@@ -249,7 +218,7 @@ const CreateAccount: React.FC<CreateAccountProps> = ({ setCreatingAccount }) => 
           </div>
         ) : allResponses ? (
           <div className="completion-screen">
-            <h2>Account Creation Complete!</h2>
+            <h2>Thank you!</h2>
             <h3>Your Responses:</h3>
             <div className="responses-grid">
               {Object.entries(allResponses).map(([question, answer]) => (
@@ -259,25 +228,14 @@ const CreateAccount: React.FC<CreateAccountProps> = ({ setCreatingAccount }) => 
                 </div>
               ))}
             </div>
-            {promptPassword && !passwordSaved && (
-              <div className="password-creation">
-                <h3>Create a Password</h3>
-                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" />
-                <button onClick={handlePasswordSave}>Save Password</button>
-              </div>
-            )}
-            {passwordSaved && (
-              <p>Your account has been created successfully!</p>
-            )}
-            <button className="back-to-home-btn" onClick={() => setCreatingAccount(false)}>Back to Home</button>
+            <button className="back-to-home-btn" onClick={onComplete}>Finish</button>
           </div>
         ) : (
-          <p>Loading questions or all questions answered...</p>
+          <p>Loading questions...</p>
         )}
-        {!allResponses && <button className="back-button" onClick={() => setCreatingAccount(false)}>Back to Home</button>}
       </div>
     </div>
   );
 };
 
-export default CreateAccount;
+export default VoiceQuestionnaire;

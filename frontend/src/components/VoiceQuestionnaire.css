@@ -18,10 +18,38 @@
   text-align: center;
 }
 
+.question-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .question-text {
   font-size: 1.5rem;
   color: var(--primary-dark);
   margin-bottom: 1.5rem;
+}
+
+.input-mode-selector {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.input-mode-selector button {
+  background: transparent;
+  border: 1px solid var(--primary-blue);
+  color: var(--primary-blue);
+  margin: 0 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.input-mode-selector button.active {
+  background: var(--primary-blue);
+  color: var(--white);
 }
 
 .recording-controls,
@@ -39,6 +67,30 @@
   margin-top: 1rem;
   font-style: italic;
   color: var(--dark-gray);
+}
+
+.text-input-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
+
+.text-input-container textarea {
+  width: 100%;
+  max-width: 500px;
+  min-height: 100px;
+  padding: 0.8rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.text-input-container button {
+  width: 100%;
+  max-width: 500px;
 }
 
 .completion-screen h2 {
@@ -67,86 +119,6 @@
   color: var(--primary-blue);
 }
 
-.back-button {
-  background: transparent;
-  border: 1px solid var(--primary-dark);
-  color: var(--primary-dark);
-  margin-top: 1.5rem;
-}
-
-.back-button:hover {
-  background: var(--primary-dark);
-  color: var(--white);
-}
-
-.password-creation {
-  margin-top: 2rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-}
-
-.password-creation input[type="password"] {
-  padding: 0.8rem;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-size: 1rem;
-  width: 80%;
-  max-width: 300px;
-}
-
-.password-creation button {
-  width: 80%;
-  max-width: 300px;
-}
-
 .back-to-home-btn {
   margin-top: 1rem;
-}
-
-.input-mode-selector {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 1.5rem;
-}
-
-.input-mode-selector button {
-  background: transparent;
-  border: 1px solid var(--primary-blue);
-  color: var(--primary-blue);
-  margin: 0 0.5rem;
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.input-mode-selector button.active {
-  background: var(--primary-blue);
-  color: var(--white);
-}
-
-.text-input-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-  width: 100%;
-}
-
-.text-input-container textarea {
-  width: 100%;
-  max-width: 500px;
-  min-height: 100px;
-  padding: 0.8rem;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-family: inherit;
-}
-
-.text-input-container button {
-  width: 100%;
-  max-width: 500px;
 }
