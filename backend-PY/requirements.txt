@@ -24,3 +24,4 @@ uvicorn
 python-dotenv
 openai
 pydantic
+python-multipart
