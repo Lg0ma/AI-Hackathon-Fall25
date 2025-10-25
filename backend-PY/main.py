@@ -2,70 +2,145 @@ from fastapi import FastAPI, UploadFile, File
 from pydantic import BaseModel
 import shutil
 import os
+import whisper
+from fastapi.middleware.cors import CORSMiddleware
+import json
+import bcrypt
 
+# --- FastAPI App Initialization ---
 app = FastAPI()
 
-# In-memory storage for user accounts and voice responses
-users_db = []
-voice_responses_db = {}
+origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# --- AI Model Loading ---
+print("Loading Whisper 'base' model...")
+model = whisper.load_model("base")
+print("Model loaded successfully.")
+
+# --- Persistent Data Storage (using a JSON file) ---
+RESPONSES_FILE = "user_responses.json"
+
+def load_responses():
+    if os.path.exists(RESPONSES_FILE):
+        with open(RESPONSES_FILE, "r") as f:
+            return json.load(f)
+    return {"users": []}
+
+def save_responses(responses_data):
+    with open(RESPONSES_FILE, "w") as f:
+        json.dump(responses_data, f, indent=4)
 
 # --- Account Creation ---
-class User(BaseModel):
-    username: str
-    email: str
+class Account(BaseModel):
+    full_name: str
+    phone_number: str
+    postal_code: str
     password: str
 
 @app.post("/create-account")
-async def create_account(user: User):
-    users_db.append(user)
-    return {"message": "Account created successfully"}
+async def create_account(account: Account):
+    responses_data = load_responses()
+    
+    phone_number = "".join(filter(str.isdigit, account.phone_number))
+    
+    existing_user = next((u for u in responses_data["users"] if u.get("phone_number") == phone_number), None)
+    if existing_user:
+        return {"error": "User with this phone number already exists"}
 
+    hashed_password = bcrypt.hashpw(account.password.encode('utf-8'), bcrypt.gensalt())
+    
+    new_user = {
+        "full_name": account.full_name,
+        "phone_number": phone_number,
+        "postal_code": account.postal_code,
+        "password": hashed_password.decode('utf-8'),
+        "responses": {}
+    }
+    
+    responses_data["users"].append(new_user)
+    save_responses(responses_data)
+    
+    return {"message": "Account created successfully", "phone_number": phone_number}
 
-# --- Voice-based Information Filling ---
-
-# Define the questions the robot will ask
+# --- Voice-based Q&A Logic ---
 QUESTIONS = [
-    "What is your full name?",
-    "What is your phone number?",
-    "What is your address?",
     "What are your skills?",
     "What is your previous work experience?"
 ]
 
-@app.post("/voice-input/{user_id}/{question_id}")
-async def handle_voice_input(user_id: str, question_id: int, audio_file: UploadFile = File(...)):
-    # --- 1. Save the audio file ---
-    file_path = f"temp_audio_{user_id}_{question_id}.wav"
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(audio_file.file, buffer)
+@app.get("/questions")
+async def get_questions():
+    return {"questions": QUESTIONS}
 
-    # --- 2. Transcribe the audio using Whisper (placeholder) ---
-    # In a real implementation, you would call the Whisper API here
-    # For now, we'll just use the filename as a placeholder for the transcribed text
-    transcribed_text = f"(transcribed text for {file_path})"
+class TextInput(BaseModel):
+    text: str
 
-    # --- 3. Clean up the audio file ---
-    os.remove(file_path)
+@app.post("/text-input/{phone_number}/{question_id}")
+async def handle_text_input(phone_number: str, question_id: int, text_input: TextInput):
+    responses_data = load_responses()
+    user_entry = next((u for u in responses_data["users"] if u.get("phone_number") == phone_number), None)
 
-    # --- 4. Save the response ---
-    if user_id not in voice_responses_db:
-        voice_responses_db[user_id] = {}
-    voice_responses_db[user_id][QUESTIONS[question_id]] = transcribed_text
+    if not user_entry:
+        return {"error": "User not found"}
 
-    # --- 5. Determine the next question ---
+    user_entry["responses"][QUESTIONS[question_id]] = text_input.text
+    save_responses(responses_data)
+
     next_question_id = question_id + 1
     if next_question_id < len(QUESTIONS):
         return {
             "message": "Response received",
             "next_question": QUESTIONS[next_question_id],
-            "next_question_id": next_question_id
+            "next_question_id": next_question_id,
         }
     else:
         return {
             "message": "All questions answered",
-            "responses": voice_responses_db[user_id]
+            "responses": user_entry["responses"],
         }
 
-@app.get("/questions")
-async def get_questions():
-    return {"questions": QUESTIONS}
+@app.post("/voice-input/{phone_number}/{question_id}")
+async def handle_voice_input(phone_number: str, question_id: int, audio_file: UploadFile = File(...)):
+    file_path = f"temp_audio_{phone_number}_{question_id}.wav"
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(audio_file.file, buffer)
+
+    result = model.transcribe(file_path)
+    transcribed_text = result["text"]
+    print(f"User '{phone_number}' | Q{question_id} | Transcribed: '{transcribed_text}'")
+
+    os.remove(file_path)
+
+    responses_data = load_responses()
+    user_entry = next((u for u in responses_data["users"] if u.get("phone_number") == phone_number), None)
+
+    if not user_entry:
+        return {"error": "User not found"}
+
+    user_entry["responses"][QUESTIONS[question_id]] = transcribed_text
+    save_responses(responses_data)
+
+    next_question_id = question_id + 1
+    if next_question_id < len(QUESTIONS):
+        return {
+            "message": "Response received",
+            "next_question": QUESTIONS[next_question_id],
+            "next_question_id": next_question_id,
+            "transcribed_text": transcribed_text
+        }
+    else:
+        return {
+            "message": "All questions answered",
+            "responses": user_entry["responses"],
+            "transcribed_text": transcribed_text,
+        }

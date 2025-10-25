@@ -1,20 +1,48 @@
-# Root .gitignore for AI-Hackathon-Fall25
-
 # Python artifacts
 __pycache__/
 *.py[cod]
 *$py.class
+*.so
+.Python
+
+# Audio files (temporary Whisper transcription files)
+*.wav
+temp_audio_*
 
 # Virtual environments
-backend-PY/venv/
 venv/
-.venv/
+env/
+ENV/
+backend-PY/venv/
 
-# Pip cache and build dirs
-pip-wheel-metadata/
-build/
-dist/
+# Environment variables
+.env
+*.env
 
-# IDE/editor config
+# IDE
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# User data
+user_responses.json
+
+# Logs
+*.log
+logs/
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/

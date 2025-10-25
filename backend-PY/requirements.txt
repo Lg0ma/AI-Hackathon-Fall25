@@ -22,9 +22,15 @@ torchvision
 tqdm
 typing_extensions
 urllib3
+# Core FastAPI dependencies
 fastapi
 uvicorn
-python-dotenv
-openai
 pydantic
 python-multipart
+
+# Password hashing
+bcrypt
+
+# Whisper AI for audio transcription
+# (automatically installs: torch, torchaudio, torchvision, numpy, tiktoken, tqdm, regex, numba, llvmlite)
+openai-whisper
