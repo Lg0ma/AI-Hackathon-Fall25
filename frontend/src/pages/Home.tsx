@@ -8,7 +8,7 @@ function Home() {
     const navigate = useNavigate();
 
     const goProfile = () => {
-        console.log("Hello");
+        console.log("Hello")
     };
 
     return (
