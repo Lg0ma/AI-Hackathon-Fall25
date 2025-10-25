@@ -17,6 +17,10 @@ function LandingPage() {
         navigate(`/interview/${roomName}`);
     };
 
+    const goHome = () => {
+        navigate('/home')
+    }
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 flex items-center justify-center p-4">
             {/* Card */}
@@ -60,10 +64,10 @@ function LandingPage() {
 
                 {/* Demo Button */}
                 <button
-                    onClick={openDemoInterview}
+                    onClick={goHome}
                     className="w-full py-4 px-6 bg-gradient-to-r from-gray-600 to-gray-800 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:from-gray-600 hover:to-gray-800 transition-all duration-300 ease-in-out transform hover:-translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-orange-300 flex items-center justify-center gap-2"
                 >
-                    <span>Open Demo Interview</span>
+                    <span>Home</span>
                 </button>
 
                 {/* Footer Text */}
