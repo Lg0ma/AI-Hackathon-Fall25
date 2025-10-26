@@ -86,11 +86,34 @@ async def create_account(account: Account):
     except Exception as e:
         print(f"CRITICAL ERROR: An exception occurred: {e}")
         return {"error": str(e)}
+
+# --- Account Login ---
+class LoginData(BaseModel):
+    email: str
+    password: str
+
+@app.post("/login")
+async def login(login_data: LoginData):
+    print(f"--- Received request to login for: {login_data.email} ---")
+    try:
+        auth_response = supabase.auth.sign_in_with_password({
+            "email": login_data.email,
+            "password": login_data.password
+        })
+        print(f"Supabase Auth Response: {auth_response}")
+        if auth_response.session:
+            print("Login successful.")
+            return {"message": "Login successful", "session": auth_response.session.dict()}
+        if auth_response.error:
+            print(f"ERROR: Login failed: {auth_response.error.message}")
+            return {"error": f"Login failed: {auth_response.error.message}"}
+    except Exception as e:
+        print(f"CRITICAL ERROR: An exception occurred: {e}")
+        return {"error": str(e)}
     
 # --- Voice-based Q&A Logic ---
 QUESTIONS = [
     "What are your skills?",
-    "What is your previous work experience?"
 ]
 
 @app.get("/questions")

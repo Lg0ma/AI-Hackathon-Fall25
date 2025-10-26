@@ -34,3 +34,7 @@ bcrypt
 # Whisper AI for audio transcription
 # (automatically installs: torch, torchaudio, torchvision, numpy, tiktoken, tqdm, regex, numba, llvmlite)
 openai-whisper
+
+# Supabase
+supabase
+python-dotenv
