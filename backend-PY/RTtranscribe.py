@@ -90,7 +90,8 @@ class StreamingTranscriber:
         sample_rate=16000,
         chunk_duration=2,
         silence_threshold=0.01,
-        device="cuda"  # or "cuda" if you have GPU
+        # TODO: Change back the devie type to cuda so that its faster
+        device="cpu"  # or "cuda" if you have GPU
     ):
         """
         Streaming transcriber with optimized performance

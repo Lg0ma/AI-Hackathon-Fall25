@@ -42,7 +42,8 @@ print("[OK] AI routes registered at /ai")
 
 # --- AI Model Loading ---
 print("Loading faster-whisper 'large-v3' model on CUDA...")
-model = WhisperModel("large-v3", device="cuda", compute_type="float16")
+# TODO: compute_type must be changed as it was changed for my mac to be able to run it.
+model = WhisperModel("large-v3", device="cpu", compute_type="int8")
 print("✅ Model loaded successfully on CUDA.")
 
 # --- WebSocket Connection Manager ---
