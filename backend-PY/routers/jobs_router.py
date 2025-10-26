@@ -11,8 +11,8 @@ async def get_jobs():
             "employer_id, title, description, expected_skills, "
             "years_of_experience_required, created_at, postal_code"
         ).execute()
-        print("-----")
-        print("get_jobs response: ", response.data[0]["employer_id"])
+    
+        print(response.data)
         return response.data
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

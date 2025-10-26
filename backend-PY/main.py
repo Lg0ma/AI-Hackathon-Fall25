@@ -9,7 +9,6 @@ import bcrypt
 
 # Import AI routes
 from ai_routes import router as ai_router
-
 from routers.jobs_router import router as jobs_router
 # --- FastAPI App Initialization ---
 app = FastAPI()
@@ -32,6 +31,7 @@ app.add_middleware(
 
 # --- Include AI Routes ---
 app.include_router(ai_router)
+app.include_router(jobs_router, prefix="/api", tags=["jobs"])
 print("AI routes registered at /ai")
 
 # --- AI Model Loading ---
