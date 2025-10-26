@@ -6,6 +6,7 @@ import CreateAccount from './pages/CreateAccount';
 import LoginAccount from './pages/LoginAccount';
 import QuestionnairePage from './pages/QuestionnairePage';
 import Home from './pages/Home';
+import Inbox from './pages/Inbox';
 import './App.css';
 import './index.css';
 
@@ -20,6 +21,7 @@ function App() {
         <Route path="/questionnaire" element={<QuestionnairePage />} />
         <Route path="/login" element={<LoginAccount />} />
         <Route path="/home" element={<Home />} />
+        <Route path="/inbox" element={<Inbox />} />
       </Routes>
     </BrowserRouter>
   );
