@@ -15,6 +15,7 @@ interface Job {
 }
 
 function Home() {
+    const navigate = useNavigate();
     const [jobs, setJobs] = useState<Job[]>([]);
     const [selectedJob, setSelectedJob] = useState<Job | null>(null);
     const [loading, setLoading] = useState(true);
@@ -66,13 +67,18 @@ function Home() {
         return diffDays <= 7;
     };
 
-    // if (loading) return <p className="p-8">Loading jobs...</p>;
-    // if (error) return <p className="p-8">Error: {error}</p>;
+    if (loading) return <p className="p-8 flex justify-center items-center">Loading jobs...</p>;
+    if (error) return <p className="p-8 flex justify-center items-center">Error: {error}</p>;
 
     return (
         <>
             <nav className="flex justify-between bg-gradient-to-r from-blue-700 to-blue-800 py-5 text-white px-15 shadow-md">
-                <div className="flex items-center text-5xl">Home</div>
+                <div 
+                    className="flex items-center text-5xl hover:cursor-pointer"
+                    onClick={() => navigate('/')}
+                >
+                    Home
+                </div>
                 <div>
                     <img
                         onClick={goProfile}
