@@ -24,8 +24,13 @@ export const JobDescription: React.FC<JobDescriptionProps> = ({
     const navigate = useNavigate();
 
     const openDemoInterview = () => {
-            const roomName = "Candidate_Ivan_Interview";
-            navigate(`/interview/${roomName}`);
+        // Navigate to live interview (streams skill_interview.py output)
+        navigate(`/live-interview/${employer_id}`);
+    };
+
+    const openInterviewSession = () => {
+        // Navigate to interview session
+        navigate(`/interview-session/${employer_id}`);
     };
 
     // Calculate days ago
@@ -84,14 +89,10 @@ export const JobDescription: React.FC<JobDescriptionProps> = ({
                             <Bookmark className="w-5 h-5" />
                             Save
                         </button>
-                        {/* <button className="px-6 py-3 bg-neutral-800 hover:bg-neutral-700 rounded-lg flex items-center gap-2 transition-colors">
-                            <Share2 className="w-5 h-5" />
-                            Share
-                        </button> */}
-                        <button 
-                        onClick={openDemoInterview}
-                        className="px-8 py-3 bg-teal-600 hover:bg-teal-700 rounded-lg font-semibold transition-colors">
-                            Apply
+                        <button
+                        onClick={openInterviewSession}
+                        className="px-8 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold transition-colors">
+                            Start Interview
                         </button>
                         <button className="p-3 bg-neutral-800 hover:bg-neutral-700 rounded-lg transition-colors">
                             <MoreHorizontal className="w-5 h-5" />
@@ -220,10 +221,15 @@ export const JobDescription: React.FC<JobDescriptionProps> = ({
                         <Bookmark className="w-5 h-5" />
                         Save
                     </button>
-                    <button 
+                    <button
                         onClick={openDemoInterview}
                         className="flex-1 py-3 bg-teal-600 hover:bg-teal-700 rounded-lg font-semibold transition-colors">
-                        Apply
+                        Answer Questionnaire
+                    </button>
+                    <button
+                        onClick={openInterviewSession}
+                        className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold transition-colors">
+                        Start Interview
                     </button>
                 </div>
             </div>

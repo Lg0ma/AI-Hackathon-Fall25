@@ -5,9 +5,11 @@ Includes routes for:
 2. Skill Interview - Job skill extraction and detection
 """
 
-from fastapi import APIRouter, HTTPException, UploadFile, File
-from pydantic import BaseModel
-from typing import List, Dict, Optional
+from fastapi import APIRouter, HTTPException, UploadFile, File, Request, status
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel, validator
+from typing import List, Dict, Optional, Any
 import json
 
 # Import AI workflow modules
@@ -64,16 +66,73 @@ class SkillExtractionResponse(BaseModel):
     total_skills: int
 
 class QuestionGenerationRequest(BaseModel):
-    skills: List[Dict[str, str]]  # [{"skill": "...", "category": "..."}]
+    skills: List[Any]  # Accept both strings and dicts
+    max_questions: Optional[int] = 8  # Maximum number of questions (default 8 for 5-min interview)
+
+    @validator('skills', pre=True)
+    def normalize_skills(cls, v):
+        """
+        Normalize skills to always be List[Dict[str, str]]
+        Accepts both formats:
+        - ["Carpentry", "Welding"] -> [{"skill": "Carpentry", "category": "General"}, ...]
+        - [{"skill": "Carpentry", "category": "Trade Skill"}] -> unchanged
+        """
+        if not v:
+            return v
+
+        normalized = []
+        for item in v:
+            if isinstance(item, str):
+                # Convert string to dict format
+                normalized.append({"skill": item, "category": "General"})
+            elif isinstance(item, dict):
+                # Already in dict format, but ensure it has required fields
+                if "skill" not in item:
+                    raise ValueError(f"Skill object missing 'skill' field: {item}")
+                if "category" not in item:
+                    item["category"] = "General"
+                normalized.append(item)
+            else:
+                raise ValueError(f"Invalid skill format: {item}. Must be string or dict.")
+
+        return normalized
 
 class QuestionGenerationResponse(BaseModel):
     questions: List[str]
     total_questions: int
 
 class SkillDetectionRequest(BaseModel):
-    skills: List[Dict[str, str]]  # Available skills to detect
+    skills: List[Any]  # Accept both strings and dicts
     transcribed_text: str
     timestamp: Optional[str] = None
+
+    @validator('skills', pre=True)
+    def normalize_skills(cls, v):
+        """
+        Normalize skills to always be List[Dict[str, str]]
+        Accepts both formats:
+        - ["Carpentry", "Welding"] -> [{"skill": "Carpentry", "category": "General"}, ...]
+        - [{"skill": "Carpentry", "category": "Trade Skill"}] -> unchanged
+        """
+        if not v:
+            return v
+
+        normalized = []
+        for item in v:
+            if isinstance(item, str):
+                # Convert string to dict format
+                normalized.append({"skill": item, "category": "General"})
+            elif isinstance(item, dict):
+                # Already in dict format, but ensure it has required fields
+                if "skill" not in item:
+                    raise ValueError(f"Skill object missing 'skill' field: {item}")
+                if "category" not in item:
+                    item["category"] = "General"
+                normalized.append(item)
+            else:
+                raise ValueError(f"Invalid skill format: {item}. Must be string or dict.")
+
+        return normalized
 
 class SkillDetectionResponse(BaseModel):
     detected_skills: List[str]
@@ -124,7 +183,7 @@ async def evaluate_candidate(request: CandidateEvaluationRequest):
                 detail="AI evaluation failed. Check if Ollama is running."
             )
 
-        print(f"[AI Routes] ✓ Evaluation complete")
+        print(f"[AI Routes] Evaluation complete")
         print(f"[AI Routes] Recommendation: {evaluation.recommendation}")
         print(f"[AI Routes] Score: {evaluation.overall_score}/100")
 
@@ -179,7 +238,7 @@ async def health_check():
 
     is_connected = ollama_client.check_connection()
 
-    print(f"[AI Routes] Ollama status: {'✓ Connected' if is_connected else '✗ Not connected'}")
+    print(f"[AI Routes] Ollama status: {'Connected' if is_connected else 'Not connected'}")
 
     return {
         "connected": is_connected,
@@ -232,7 +291,7 @@ async def extract_skills(request: JobDescriptionRequest):
                 detail="Could not extract skills from job description"
             )
 
-        print(f"[AI Routes] ✓ Extracted {len(skills)} skills")
+        print(f"[AI Routes] Extracted {len(skills)} skills")
 
         return {
             "skills": skills,
@@ -256,30 +315,65 @@ async def generate_questions(request: QuestionGenerationRequest):
     Creates natural, conversational interview questions tailored for
     blue-collar/construction workers. One question per skill.
 
-    **Example Request:**
+    **Accepts two skill formats:**
+
+    Format 1 - Array of strings (simplified):
+    ```json
+    {
+      "skills": ["Carpentry", "Forklift Operation", "Welding"],
+      "max_questions": 8
+    }
+    ```
+
+    Format 2 - Array of objects (with categories):
     ```json
     {
       "skills": [
         {"skill": "Carpentry", "category": "Trade Skill"},
         {"skill": "Forklift Operation", "category": "Equipment Operation"}
-      ]
+      ],
+      "max_questions": 8
     }
     ```
 
     **Returns:**
-    - List of interview questions
+    - List of interview questions (max 8)
     - Total question count
+
+    **Note:** Questions are limited to 8 max for a 5-minute interview session
     """
     print(f"\n[AI Routes] === Question Generation Request ===")
     print(f"[AI Routes] Skills count: {len(request.skills)}")
+    print(f"[AI Routes] Skills after normalization:")
+    for i, skill in enumerate(request.skills[:3], 1):  # Show first 3
+        print(f"[AI Routes]   {i}. {skill}")
+    if len(request.skills) > 3:
+        print(f"[AI Routes]   ... and {len(request.skills) - 3} more")
 
     try:
+        # Validate skills structure (should already be normalized by Pydantic validator)
+        if not request.skills:
+            print(f"[AI Routes] ERROR: No skills provided")
+            raise HTTPException(
+                status_code=400,
+                detail="No skills provided. Please provide at least one skill."
+            )
+
+        print(f"[AI Routes] All skills normalized and validated")
+
+        # Limit skills to max_questions if we have more skills than max questions
+        max_q = request.max_questions or 8
+        skills_to_use = request.skills[:max_q] if len(request.skills) > max_q else request.skills
+
+        if len(request.skills) > max_q:
+            print(f"[AI Routes] Limiting from {len(request.skills)} skills to {max_q} (max_questions limit)")
+
         # Create skill analyzer and set skills
         analyzer = SkillAnalyzer(ollama_client)
-        analyzer.skills = request.skills
+        analyzer.skills = skills_to_use
 
         # Initialize skill status
-        for skill_item in request.skills:
+        for skill_item in skills_to_use:
             skill_name = skill_item["skill"]
             analyzer.skill_status[skill_name] = {
                 "has": False,
@@ -287,24 +381,35 @@ async def generate_questions(request: QuestionGenerationRequest):
                 "category": skill_item.get("category", "General")
             }
 
+        print(f"[AI Routes] Calling analyzer.generate_questions() for {len(skills_to_use)} skills...")
         # Generate questions
         questions = analyzer.generate_questions()
 
         if not questions:
+            print(f"[AI Routes] ERROR: No questions generated")
             raise HTTPException(
                 status_code=500,
                 detail="Could not generate questions"
             )
 
-        print(f"[AI Routes] ✓ Generated {len(questions)} questions")
+        # Double-check we don't exceed max_questions
+        if len(questions) > max_q:
+            print(f"[AI Routes] Truncating {len(questions)} questions to {max_q}")
+            questions = questions[:max_q]
+
+        print(f"[AI Routes] Generated {len(questions)} questions (max: {max_q})")
 
         return {
             "questions": questions,
             "total_questions": len(questions)
         }
 
+    except HTTPException:
+        # Re-raise HTTP exceptions as-is
+        raise
     except Exception as e:
         print(f"[AI Routes] ERROR: {e}")
+        print(f"[AI Routes] Error type: {type(e)}")
         import traceback
         traceback.print_exc()
         raise HTTPException(
@@ -320,7 +425,18 @@ async def detect_skills(request: SkillDetectionRequest):
     Analyzes transcribed speech to identify which skills from a given list
     the candidate has claimed to possess or demonstrated experience with.
 
-    **Example Request:**
+    **Accepts two skill formats:**
+
+    Format 1 - Array of strings:
+    ```json
+    {
+      "skills": ["Carpentry", "Power Tool Operation"],
+      "transcribed_text": "I've been a carpenter for 5 years and I use power tools every day",
+      "timestamp": "14:30:25"
+    }
+    ```
+
+    Format 2 - Array of objects:
     ```json
     {
       "skills": [
@@ -367,7 +483,7 @@ async def detect_skills(request: SkillDetectionRequest):
             timestamp
         )
 
-        print(f"[AI Routes] ✓ Detected {len(detected_skills)} skills")
+        print(f"[AI Routes] Detected {len(detected_skills)} skills")
         for skill in detected_skills:
             print(f"[AI Routes]   - {skill}")
 
@@ -411,7 +527,7 @@ async def cleanup_transcription(text: str):
     try:
         cleaned = ollama_client.cleanup_transcription(text)
 
-        print(f"[AI Routes] ✓ Cleaned transcription")
+        print(f"[AI Routes] Cleaned transcription")
         if cleaned != text:
             print(f"[AI Routes] Changes made: YES")
         else:

@@ -91,13 +91,6 @@ Preferred Qualifications:
 
                 {/* Demo Buttons */}
                 <div className="flex flex-col gap-3">
-                    <button
-                        onClick={startDemoInterview}
-                        className="w-full py-4 px-6 bg-gradient-to-r from-green-600 to-green-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:from-green-700 hover:to-green-800 transition-all duration-300 ease-in-out transform hover:-translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-green-300 flex items-center justify-center gap-2"
-                    >
-                        <span>🎤</span>
-                        <span>Try AI Interview</span>
-                    </button>
 
                     <button
                         onClick={goEmployer}

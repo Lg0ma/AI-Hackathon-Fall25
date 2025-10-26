@@ -22,7 +22,7 @@ SETUP:
    - Run in terminal: ollama run mistral:7b
    - Keep it running while using this script
 
-3. Customize the HARDCODED_JOB_DESCRIPTION below for your specific job
+3. Customize the job description below for your specific job
 
 USAGE:
 1. Run this script: python skill_interview.py
@@ -54,32 +54,30 @@ from RTtranscribe import StreamingTranscriber
 # CONFIGURATION
 # ============================================================================
 
-# Hardcoded job description (edit this to test different jobs)
+# Default job description (edit this to test different jobs)
 HARDCODED_JOB_DESCRIPTION = """
-Construction Worker - General Laborer
+Commercial Painter
 
-We are seeking reliable construction workers to join our team for residential and commercial projects.
+Company: ColorPro Finishes
+Location: Austin, TX (78701)
+Job Type: Full-time
+Pay: $20-30/hr
+Benefits: 401(k) match
+Experience Required: 3 years minimum
+
+ColorPro Finishes is seeking a skilled and reliable Commercial Painter to join our expanding team in Austin, TX. The ideal candidate will be responsible for preparing, priming, and painting interior and exterior surfaces of commercial properties, ensuring top-quality finishes and adherence to project timelines. Applicants should be comfortable working on ladders, scaffolding, and in varying weather conditions. Attention to detail, safety awareness, and professionalism are key traits for this role.
 
 Requirements:
-- 2+ years of experience in construction or related field
-- Ability to operate hand tools and power tools safely
-- Knowledge of basic carpentry and framing
-- Experience with concrete work (pouring, finishing)
-- Ability to read and interpret blueprints and building plans
-- Valid driver's license and reliable transportation
-- Ability to lift 50+ pounds regularly
-- Strong attention to detail and safety protocols
-- Good communication and teamwork skills
-- Punctuality and reliability
-
-Preferred Qualifications:
-- OSHA 10 or OSHA 30 certification
-- Forklift operation certification
-- Experience with drywall installation and finishing
-- Electrical or plumbing basics knowledge
-- Welding experience
-- First aid/CPR certified
-- Bilingual (English/Spanish)
+- 3+ years of commercial painting experience
+- Ability to prepare, prime, and paint interior and exterior surfaces
+- Experience working on commercial properties
+- Comfortable working on ladders and scaffolding
+- Able to work in varying weather conditions
+- Strong attention to detail
+- Safety awareness and adherence to protocols
+- Professional demeanor and reliability
+- Ability to meet project timelines
+- US work authorization required (OPT/CPT candidates accepted)
 """
 
 # ============================================================================
@@ -314,7 +312,7 @@ Extract and list ALL required skills (both mentioned and commonly expected for t
                         "category": skill_item.get("category", "General")
                     }
 
-                print(f"✅ Found {len(valid_skills)} skills")
+                print(f"Found {len(valid_skills)} skills")
                 return valid_skills
 
             except json.JSONDecodeError as e:
@@ -367,7 +365,7 @@ Extract and list ALL required skills (both mentioned and commonly expected for t
                 if skill and 2 <= len(skill) <= 50:
                     skills.append({"skill": skill, "category": "General"})
 
-        # If still no skills found, use hardcoded construction skills as last resort
+        # If still no skills found, use default construction skills as last resort
         if not skills:
             print("   WARNING: Could not extract any skills, using construction defaults...")
             skills = [
@@ -447,7 +445,7 @@ Return a JSON array of questions (one per skill) in the same order:
 
                 # Validate it's a list
                 if isinstance(questions, list) and all(isinstance(q, str) for q in questions):
-                    print(f"✅ Generated {len(questions)} questions")
+                    print(f"Generated {len(questions)} questions")
                     return questions
                 else:
                     print(" Warning: Invalid question format, using generic questions")
@@ -477,24 +475,34 @@ Return a JSON array of questions (one per skill) in the same order:
 
         system_prompt = """You are an expert at analyzing blue collar and construction worker interviews.
 
-Your task is to identify which skills from the provided list the candidate has demonstrated or claimed to possess.
+Your task is to identify which skills from the provided list the candidate has ACTUALLY DEMONSTRATED EXPERIENCE with.
 
-DETECTION RULES FOR CONSTRUCTION/BLUE COLLAR:
-1. Explicit claims: "I have", "I know how to", "I can", "I've done", "I'm certified in"
-2. Experience mentions: "I worked with", "I operated", "I built", "I installed", "I've been doing"
-3. Years/duration: "5 years of", "I've been a carpenter for"
-4. Match skills flexibly:
-   - "I use power tools" → "Power Tool Operation"
-   - "I can drive a forklift" → "Forklift Operation"
-   - "I have my OSHA card" → "OSHA 10" or "OSHA 30"
-   - "I'm a carpenter" → "Carpentry"
-   - "I can lift heavy stuff" → "Heavy Lifting"
-   - "I read plans" or "blueprints" → "Blueprint Reading"
-5. Licenses: "I have a driver's license", "I have a CDL", "I'm licensed"
-6. Soft skills: "I'm reliable", "I show up on time", "I work well with others"
+CRITICAL: The candidate must describe DOING SOMETHING that requires the skill, not just mention the skill name!
 
-Be generous - construction workers may not use formal terminology.
-Match based on meaning, not exact wording.
+VALID DETECTION - Candidate describes actual experience or actions:
+[YES] "I've been framing houses for 5 years" → Carpentry (describes doing carpentry work)
+[YES] "I operate forklifts to move materials around the warehouse" → Forklift Operation (describes operating)
+[YES] "I got my OSHA 10 certification last year" → OSHA 10 (describes having certification)
+[YES] "I read blueprints every day to know what to build" → Blueprint Reading (describes using blueprints)
+[YES] "I've installed plumbing in over 30 homes" → Plumbing (describes installation work)
+[YES] "I weld metal pipes and frames" → Welding (describes welding activity)
+[YES] "I use power tools like drills and saws daily" → Power Tool Operation (describes using tools)
+
+INVALID DETECTION - Just mentioning keywords without experience:
+[NO] "The job posting mentioned carpentry" → NOT Carpentry (just referencing the word)
+[NO] "I'm interested in learning welding" → NOT Welding (wants to learn, doesn't have experience)
+[NO] "Forklift operation sounds interesting" → NOT Forklift Operation (just commenting on it)
+[NO] "I've seen people use blueprints" → NOT Blueprint Reading (observed, not done)
+[NO] "My friend does plumbing" → NOT Plumbing (someone else does it)
+
+EXPERIENCE INDICATORS (must be present):
+- Action verbs: "I do", "I've done", "I worked on", "I operated", "I built", "I installed", "I have"
+- Time/duration: "for X years", "since 2020", "daily", "every day", "regularly"
+- Specific examples: "I built X", "I worked on Y project", "I handle Z tasks"
+- Certifications/licenses: "I'm certified", "I have a license", "I completed training"
+- Professional identity: "I'm a carpenter" (claims to be a professional in that role)
+
+Match skills flexibly based on meaning, but ONLY if they describe actual experience or ability.
 
 Return ONLY a valid JSON array of exact skill names from the list (just the skill, not the category).
 If no skills detected, return: []
@@ -506,7 +514,10 @@ Do NOT add explanations or text outside the array."""
 CANDIDATE'S STATEMENT:
 "{analysis_text}"
 
-Based on this statement, which skills from the list above does the candidate have?
+Analyze the statement above. Which skills from the list has the candidate ACTUALLY DONE or DEMONSTRATED EXPERIENCE with?
+
+Remember: Only include skills where they describe doing something that requires that skill, not just mentioning the keyword.
+
 Return JSON array with exact skill names only:"""
 
         response = self.client.generate(user_prompt, system=system_prompt)
@@ -525,23 +536,25 @@ Return JSON array with exact skill names only:"""
                     detected_skills = []
 
             except json.JSONDecodeError:
-                # Fallback to keyword matching
+                # Fallback: don't use simple keyword matching
+                # We want to rely on the LLM's better understanding
                 detected_skills = []
 
-        # If JSON parsing failed, use simple keyword matching
+        # If JSON parsing failed, DON'T use simple keyword matching
+        # Simple keyword matching is too prone to false positives
+        # (e.g., "I'm interested in carpentry" would match "Carpentry")
+        # Trust the LLM or return empty list
         if not detected_skills:
-            text_lower = analysis_text.lower()
-            for skill_item in self.skills:
-                skill_name = skill_item["skill"]
-                if skill_name.lower() in text_lower:
-                    detected_skills.append(skill_name)
+            # Don't do fallback keyword matching - it defeats the purpose
+            # of requiring actual experience descriptions
+            pass
 
         # Update skill status for detected skills
         for skill_name in detected_skills:
             if skill_name in self.skill_status:
                 if not self.skill_status[skill_name]["has"]:
                     self.skill_status[skill_name]["has"] = True
-                    print(f"    ✓ Detected skill: {skill_name}")
+                    print(f"    Detected skill: {skill_name}")
 
                 self.skill_status[skill_name]["detected_in"].append({
                     "timestamp": timestamp,
@@ -600,7 +613,10 @@ class SkillInterviewTranscriber(StreamingTranscriber):
         if text:
             # Remove language emoji if present
             clean_text = text
-            if text.startswith("🇺🇸") or text.startswith("🇪🇸") or text.startswith("🌐"):
+            if text.startswith("[US]") or text.startswith("[ES]") or text.startswith("[??]"):
+                clean_text = text[4:].strip()
+            elif len(text) > 2 and ord(text[0]) > 127:
+                # Remove any emoji at the start (2 bytes for flag emojis)
                 clean_text = text[2:].strip()
 
             # Get timestamp
@@ -621,7 +637,7 @@ class SkillInterviewTranscriber(StreamingTranscriber):
                     print(" No changes needed")
 
             # Step 2: Detect skills in the (cleaned) text
-            print("  🔍 Analyzing for skills...", end="", flush=True)
+            print("  Analyzing for skills...", end="", flush=True)
             detected = self.skill_analyzer.detect_skills_in_text(
                 clean_text,
                 timestamp,
@@ -748,6 +764,14 @@ class SkillInterviewTranscriber(StreamingTranscriber):
 
 def main():
     """Main interview workflow"""
+    import argparse
+    import sys
+
+    # Parse command-line arguments
+    parser = argparse.ArgumentParser(description='AI-Powered Skill Interview System')
+    parser.add_argument('--job-file', type=str, help='Path to file containing job description')
+    parser.add_argument('--job-text', type=str, help='Job description as text')
+    args = parser.parse_args()
 
     # Step 1: Initialize Ollama client
     print("\n" + "="*60)
@@ -756,9 +780,9 @@ def main():
 
     ollama = OllamaClient(model="mistral:7b")
 
-    print("\n🔍 Checking Ollama connection...")
+    print("\nChecking Ollama connection...")
     if not ollama.check_connection():
-        print("❌ ERROR: Cannot connect to Ollama at http://localhost:11434")
+        print("ERROR: Cannot connect to Ollama at http://localhost:11434")
         print("\n" + "="*60)
         print("  SETUP REQUIRED")
         print("="*60)
@@ -775,16 +799,35 @@ def main():
         print("="*60)
         return
 
-    print("✅ Ollama connected successfully!")
+    print("Ollama connected successfully!")
 
-    # Step 2: Use hardcoded job description
+    # Step 2: Get job description from file, text, or use default
     print("\n" + "="*60)
-    print("STEP 1: JOB DESCRIPTION (HARDCODED)")
+    print("STEP 1: JOB DESCRIPTION")
     print("="*60)
 
-    job_description = HARDCODED_JOB_DESCRIPTION
-    print("\nUsing hardcoded job description:")
+    if args.job_file:
+        # Read from file
+        print(f"\nLoading job description from: {args.job_file}")
+        try:
+            with open(args.job_file, 'r', encoding='utf-8') as f:
+                job_description = f.read()
+            print("Job description loaded successfully")
+        except Exception as e:
+            print(f"Error reading job file: {e}")
+            return
+    elif args.job_text:
+        # Use provided text
+        job_description = args.job_text
+        print("\nJob description loaded")
+    else:
+        # Use default job description
+        job_description = HARDCODED_JOB_DESCRIPTION
+        print("\nJob description loaded")
+
+    print("\nJob description:")
     print("-" * 60)
+    # Print the full job description so AI gets everything
     print(job_description)
     print("-" * 60)
 
@@ -800,8 +843,24 @@ def main():
         print(" ERROR: Could not extract skills")
         return
 
+    # Limit to 5 skills for a focused interview (5 questions)
+    if len(skills) > 5:
+        print(f"\n   Limiting from {len(skills)} skills to 5 most important skills for interview")
+        skills = skills[:5]
+    
+    analyzer.skills = skills
+    
+    # Initialize skill status for the limited skills
+    for skill_item in skills:
+        skill_name = skill_item["skill"]
+        analyzer.skill_status[skill_name] = {
+            "has": False,
+            "detected_in": [],
+            "category": skill_item.get("category", "General")
+        }
+
     # Display skills
-    print("\nSkills identified:")
+    print("\nSkills identified for interview:")
     for i, skill_item in enumerate(skills, 1):
         print(f"  {i}. [{skill_item['category']}] {skill_item['skill']}")
 
@@ -812,7 +871,7 @@ def main():
 
     questions = analyzer.generate_questions()
 
-    print(f"\n📋 Generated {len(questions)} interview questions")
+    print(f"\nGenerated {len(questions)} interview questions")
     print("="*60)
 
     # Display all questions
@@ -822,7 +881,7 @@ def main():
         print(f"\n{i}. {q}")
 
     print("\n" + "-" * 60)
-    print("\n💡 TIP: During the interview, answer these questions naturally")
+    print("\nTIP: During the interview, answer these questions naturally")
     print("   The AI will detect when you mention having each skill")
 
     # Step 5: Start interview
