@@ -7,12 +7,19 @@ from fastapi.middleware.cors import CORSMiddleware
 import json
 import bcrypt
 
+# Import AI routes
+from ai_routes import router as ai_router
+
 # --- FastAPI App Initialization ---
 app = FastAPI()
 
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
+    "http://localhost:5175",
+    "http://127.0.0.1:5175",
 ]
 app.add_middleware(
     CORSMiddleware,
@@ -21,6 +28,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# --- Include AI Routes ---
+app.include_router(ai_router)
+print("AI routes registered at /ai")
 
 # --- AI Model Loading ---
 print("Loading Whisper 'base' model...")
