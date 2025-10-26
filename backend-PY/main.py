@@ -15,9 +15,12 @@ from ai_routes import router as ai_router
 from skill_interview import OllamaClient, SkillAnalyzer
 
 from routers.jobs_router import router as jobs_router
+from routers import inbox_router
 
 # --- FastAPI App Initialization ---
 app = FastAPI()
+
+app.include_router(inbox_router.router)
 
 origins = [
     "http://localhost:5173",

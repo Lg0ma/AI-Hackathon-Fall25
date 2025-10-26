@@ -72,22 +72,22 @@ function Home() {
 
     return (
         <>
-            <nav className="flex justify-between bg-gradient-to-r from-blue-700 to-blue-800 py-5 text-white px-15 shadow-md">
-                <div 
-                    className="flex items-center text-5xl hover:cursor-pointer"
-                    onClick={() => navigate('/')}
-                >
-                    Home
-                </div>
-                <div>
-                    <img
-                        onClick={goProfile}
-                        src={profilePic}
-                        alt="User Profile"
-                        className="w-16 h-16 rounded-full object-cover shadow-lg cursor-pointer"
-                    />
-                </div>
-            </nav>
+        <nav className="flex justify-between bg-gradient-to-r from-blue-700 to-blue-800 py-5 text-white px-15 shadow-md">
+            <div className="flex items-center">
+                <div className="text-5xl">Home</div>
+                <button onClick={() => navigate("/inbox")} className="ml-8 text-xl bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded">
+                    Inbox
+                </button>
+            </div>
+            <div>
+            <img
+                onClick={goProfile}
+                src={profilePic}
+                alt="User Profile"
+                className="w-16 h-16 rounded-full object-cover shadow-lg cursor-pointer"
+            />
+            </div>
+        </nav>
 
             {/* Main container */}
             <div className="flex h-[calc(100vh-80px)] overflow-hidden">
