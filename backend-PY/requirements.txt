@@ -37,3 +37,9 @@ faster-whisper
 
 # Legacy whisper (can be removed if not needed elsewhere)
 # openai-whisper
+# Whisper AI for audio transcription
+# (automatically installs: torch, torchaudio, torchvision, numpy, tiktoken, tqdm, regex, numba, llvmlite)
+
+# Supabase
+supabase
+python-dotenv

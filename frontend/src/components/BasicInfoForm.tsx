@@ -5,7 +5,9 @@ interface BasicInfoFormProps {
 }
 
 const BasicInfoForm: React.FC<BasicInfoFormProps> = ({ onAccountCreated }) => {
-  const [fullName, setFullName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [postalCode, setPostalCode] = useState('');
   const [password, setPassword] = useState('');
@@ -15,18 +17,24 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({ onAccountCreated }) => {
     e.preventDefault();
     setError(null);
 
+    const accountData = {
+        first_name: firstName,
+        last_name: lastName,
+        email: email,
+        phone_number: phoneNumber,
+        postal_code: postalCode,
+        password: password,
+    };
+
+    console.log("Sending to backend:", accountData);
+
     try {
       const response = await fetch('http://127.0.0.1:8000/create-account', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
-          full_name: fullName, 
-          phone_number: phoneNumber, 
-          postal_code: postalCode, 
-          password 
-        }),
+        body: JSON.stringify(accountData),
       });
 
       const data = await response.json();
@@ -48,16 +56,48 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({ onAccountCreated }) => {
         <form onSubmit={handleSubmit}>
           <div className="mb-6 text-left">
             <label 
-              htmlFor="fullName" 
+              htmlFor="firstName" 
               className="block mb-2 font-medium text-gray-800"
               >
-              Full Name
+              First Name
             </label>
             <input 
               type="text" 
-              id="fullName" 
-              value={fullName} 
-              onChange={(e) => setFullName(e.target.value)}
+              id="firstName" 
+              value={firstName} 
+              onChange={(e) => setFirstName(e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              required 
+              />
+          </div>
+          <div className="mb-6 text-left">
+            <label 
+              htmlFor="lastName" 
+              className="block mb-2 font-medium text-gray-800"
+              >
+              Last Name
+            </label>
+            <input 
+              type="text" 
+              id="lastName" 
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              required 
+              />
+          </div>
+          <div className="mb-6 text-left">
+            <label 
+              htmlFor="email" 
+              className="block mb-2 font-medium text-gray-800"
+              >
+              Email
+            </label>
+            <input 
+              type="email" 
+              id="email" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full p-3 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               required 
               />

@@ -1,5 +1,6 @@
 from fastapi import FastAPI, UploadFile, File, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
+from database import supabase
 import shutil
 import os
 from faster_whisper import WhisperModel
@@ -78,40 +79,77 @@ def save_responses(responses_data):
 
 # --- Account Creation ---
 class Account(BaseModel):
-    full_name: str
+    first_name:str
+    last_name: str
+    email: str
     phone_number: str
     postal_code: str
     password: str
 
 @app.post("/create-account")
 async def create_account(account: Account):
-    responses_data = load_responses()
-    
-    phone_number = "".join(filter(str.isdigit, account.phone_number))
-    
-    existing_user = next((u for u in responses_data["users"] if u.get("phone_number") == phone_number), None)
-    if existing_user:
-        return {"error": "User with this phone number already exists"}
+    print(f"--- Received request to create account for: {account.email} ---")
+    print(f"Data received: {account.dict()}")
+    try:
+        auth_response = supabase.auth.sign_up({
+            'email': account.email,
+            'password': account.password,
+        })
+        print(f"Supabase Auth Response: {auth_response}")
+        if auth_response.user:
+            user_id = auth_response.user.id
+            print(f"Auth user created successfully with ID: {user_id}")
+            profile_response = supabase.table('profiles').update({
+                'first_name': account.first_name,
+                'last_name': account.last_name,
+                'postal_code': account.postal_code,
+                'phone_number': account.phone_number,
+            }).eq('id', user_id).execute()
+            print(f"Supabase Profile Response: {profile_response}")
+            if profile_response.data:
+                print("Profile created successfully.")
+                return {"message": "Account created successfully", "phone_number": account.phone_number}
+            else:
+                print("ERROR: Profile creation failed. Rolling back auth user.")
+                supabase.auth.admin.delete_user(user_id)
+                error_message = "Unknown profile creation error"
+                if profile_response.error:
+                    error_message = profile_response.error.message
+                return {"error": f"Failed to create user profile: {error_message}"}
+        if auth_response.error:
+            print(f"ERROR: Auth user creation failed: {auth_response.error.message}")
+            return {"error": f"Failed to create auth user: {auth_response.error.message}"}
+    except Exception as e:
+        print(f"CRITICAL ERROR: An exception occurred: {e}")
+        return {"error": str(e)}
 
-    hashed_password = bcrypt.hashpw(account.password.encode('utf-8'), bcrypt.gensalt())
-    
-    new_user = {
-        "full_name": account.full_name,
-        "phone_number": phone_number,
-        "postal_code": account.postal_code,
-        "password": hashed_password.decode('utf-8'),
-        "responses": {}
-    }
-    
-    responses_data["users"].append(new_user)
-    save_responses(responses_data)
-    
-    return {"message": "Account created successfully", "phone_number": phone_number}
+# --- Account Login ---
+class LoginData(BaseModel):
+    email: str
+    password: str
 
+@app.post("/login")
+async def login(login_data: LoginData):
+    print(f"--- Received request to login for: {login_data.email} ---")
+    try:
+        auth_response = supabase.auth.sign_in_with_password({
+            "email": login_data.email,
+            "password": login_data.password
+        })
+        print(f"Supabase Auth Response: {auth_response}")
+        if auth_response.session:
+            print("Login successful.")
+            return {"message": "Login successful", "session": auth_response.session.dict()}
+        if auth_response.error:
+            print(f"ERROR: Login failed: {auth_response.error.message}")
+            return {"error": f"Login failed: {auth_response.error.message}"}
+    except Exception as e:
+        print(f"CRITICAL ERROR: An exception occurred: {e}")
+        return {"error": str(e)}
+    
 # --- Voice-based Q&A Logic ---
 QUESTIONS = [
     "What are your skills?",
-    "What is your previous work experience?"
 ]
 
 @app.get("/questions")
