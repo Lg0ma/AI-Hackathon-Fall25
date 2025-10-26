@@ -6,6 +6,10 @@ import whisper
 from fastapi.middleware.cors import CORSMiddleware
 import json
 import bcrypt
+
+# Import AI routes
+from ai_routes import router as ai_router
+
 from routers.jobs_router import router as jobs_router
 # --- FastAPI App Initialization ---
 app = FastAPI()
@@ -13,6 +17,10 @@ app = FastAPI()
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
+    "http://localhost:5175",
+    "http://127.0.0.1:5175",
 ]
 app.add_middleware(
     CORSMiddleware,
@@ -22,7 +30,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(jobs_router, prefix="/api", tags=["jobs"])
+# --- Include AI Routes ---
+app.include_router(ai_router)
+print("AI routes registered at /ai")
 
 # --- AI Model Loading ---
 print("Loading Whisper 'base' model...")

@@ -28,7 +28,7 @@ function LandingPage() {
                 {/* Logo/Brand Area */}
                 <div className="mb-8">
                     <div className="inline-block bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-full w-16 h-16 flex items-center justify-center mb-4 shadow-lg">
-                        <span className="text-3xl font-bold">J</span>
+                        <span className="text-3xl font-bold leading-none ">J</span>
                     </div>
                     <h1 className="text-4xl font-bold text-gray-900 mb-3">
                         Welcome to Jale
