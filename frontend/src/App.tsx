@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import InterviewPage from './pages/InterviewPage';
+import InterviewSession from './pages/InterviewSession';
 import CreateAccount from './pages/CreateAccount';
 import LoginAccount from './pages/LoginAccount';
 import QuestionnairePage from './pages/QuestionnairePage';
@@ -14,6 +15,7 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/interview/:roomName" element={<InterviewPage />} />
+        <Route path="/interview-session/:jobId" element={<InterviewSession />} />
         <Route path="/create-account" element={<CreateAccount />} />
         <Route path="/questionnaire" element={<QuestionnairePage />} />
         <Route path="/login" element={<LoginAccount />} />

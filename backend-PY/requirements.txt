@@ -26,11 +26,14 @@ urllib3
 fastapi
 uvicorn
 pydantic
+ollama
 python-multipart
 
 # Password hashing
 bcrypt
 
-# Whisper AI for audio transcription
-# (automatically installs: torch, torchaudio, torchvision, numpy, tiktoken, tqdm, regex, numba, llvmlite)
-openai-whisper
+# Faster Whisper AI for audio transcription (CUDA optimized)
+faster-whisper
+
+# Legacy whisper (can be removed if not needed elsewhere)
+# openai-whisper
