@@ -25,7 +25,8 @@ export const JobDescription: React.FC<JobDescriptionProps> = ({
 
     const openDemoInterview = () => {
         // Navigate to live interview (streams skill_interview.py output)
-        navigate(`/live-interview/${employer_id}`);
+    const roomName = "Candidate_Ivan_Interview";
+        navigate(`/interview/${roomName}`);    
     };
 
     const openInterviewSession = () => {
@@ -222,14 +223,9 @@ export const JobDescription: React.FC<JobDescriptionProps> = ({
                         Save
                     </button>
                     <button
-                        onClick={openDemoInterview}
-                        className="flex-1 py-3 bg-teal-600 hover:bg-teal-700 rounded-lg font-semibold transition-colors">
-                        Answer Questionnaire
-                    </button>
-                    <button
-                        onClick={openInterviewSession}
-                        className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold transition-colors">
-                        Start Interview
+                    onClick={openDemoInterview}>
+                        Start Interview Call
+                        
                     </button>
                 </div>
             </div>

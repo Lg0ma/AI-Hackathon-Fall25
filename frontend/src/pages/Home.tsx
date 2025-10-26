@@ -95,7 +95,7 @@ function Home() {
         {/* Navbar */}
         <nav className="flex justify-between bg-gradient-to-r from-blue-700 to-blue-800 py-5 text-white px-6 shadow-md">
             <div className="flex items-center">
-            <div className="text-3xl sm:text-5xl font-bold">Home</div>
+            <div className="text-3xl sm:text-5xl font-bold">JALE</div>
             <button
                 onClick={() => navigate("/inbox")}
                 className="ml-6 sm:ml-8 text-lg sm:text-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg"
