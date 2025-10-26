@@ -25,8 +25,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Import routers
+from routers import rating_router, jobs_router
+
 # Include routers
 app.include_router(rating_router.router, prefix="/api/rating", tags=["Rating"])
+app.include_router(jobs_router.router, prefix="/api", tags=["Jobs"])
+
 
 # Root endpoint
 @app.get("/")
