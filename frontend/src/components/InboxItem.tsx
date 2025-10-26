@@ -7,13 +7,13 @@ interface InboxItemProps {
     message: string;
     created_at: string;
     job_listings: {
-      company: string;
       title: string;
-      rate: string;
-      employmentType: string;
       location: string;
       isNew?: boolean;
       companyLogo?: string;
+      employer: {
+        name: string;
+      };
     };
   };
 }
@@ -21,9 +21,7 @@ interface InboxItemProps {
 const InboxItem: React.FC<InboxItemProps> = ({ item }) => {
   const jobCardProps = {
     title: item.job_listings.title,
-    company: item.job_listings.company || 'N/A',
-    rate: item.job_listings.rate || 'N/A',
-    employmentType: item.job_listings.employmentType || 'N/A',
+    company: item.job_listings.employer.name || 'N/A',
     location: item.job_listings.location || 'N/A',
   };
 
