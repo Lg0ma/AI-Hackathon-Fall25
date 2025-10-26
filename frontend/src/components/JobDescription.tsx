@@ -168,14 +168,13 @@ export const JobDescription: React.FC<JobDescriptionProps> = ({
                 <hr className="border-neutral-700 mb-6" />
 
                 {/* What they're looking for */}
-                <section className="mb-8">
+                {/* <section className="mb-8">
                     <h2 className="text-2xl font-bold mb-6">What they're looking for</h2>
                     <div className="text-black leading-relaxed whitespace-pre-line mb-4">
                         {expected_skills}
                     </div>
                 </section>
-
-                <hr className="border-neutral-700 mb-6" />
+                <hr className="border-neutral-700 mb-6" /> */}
 
                 {/* What this job offers */}
                 <section className="mb-8">

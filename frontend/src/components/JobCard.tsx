@@ -28,7 +28,7 @@ export const JobCard: React.FC<JobCardProps> = ({
     }) => {
     return (
         <div 
-        className=" text-white p-4 border-b-2 border-neutral-700 cursor-pointer hover:bg-gray-200 transition-colors"
+        className=" text-white p-4 border-b-2 border-neutral-700 cursor-pointer hover:bg-gray-200x`  transition-colors"
         onClick={onClick}
         >
         <div className="flex items-start gap-4">
