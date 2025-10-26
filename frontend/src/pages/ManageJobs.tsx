@@ -66,7 +66,7 @@ const ManageJobs = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
-                onClick={() => navigate("/employer/dashboard")}
+                onClick={() => navigate("/employer")}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 <ArrowLeft className="w-5 h-5" />
@@ -176,13 +176,13 @@ const ManageJobs = () => {
 
                   <div className="flex lg:flex-col gap-2">
                     <button
-                      onClick={() => navigate(`/employer/edit-job/${job.employer_id}`)}
+                    //   onClick={() => navigate(`/employer/edit-job/${job.employer_id}`)}
                       className="flex-1 lg:flex-none px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm"
                     >
                       Edit
                     </button>
                     <button
-                      onClick={() => navigate(`/employer/applicants/${job.employer_id}`)}
+                    //   onClick={() => navigate(`/employer/applicants/${job.employer_id}`)}
                       className="flex-1 lg:flex-none px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm"
                     >
                       View Applicants
