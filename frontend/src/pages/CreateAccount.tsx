@@ -5,8 +5,8 @@ function CreateAccount() {
     const navigate = useNavigate();
 
     const handleAccountCreated = (phoneNumber: string) => {
-        // Navigate to questionnaire page with phone number as state
-        navigate('/questionnaire', { state: { phoneNumber } });
+        // Navigate to home page after account creation
+        navigate('/home');
     };
 
     return (
