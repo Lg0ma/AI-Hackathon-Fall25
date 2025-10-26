@@ -17,8 +17,8 @@ function LandingPage() {
         navigate(`/interview/${roomName}`);
     };
 
-    const goHome = () => {
-        navigate('/home')
+    const goEmployer = () => {
+        navigate('/employer')
     }
 
     const startDemoInterview = () => {
@@ -100,10 +100,10 @@ Preferred Qualifications:
                     </button>
 
                     <button
-                        onClick={goHome}
+                        onClick={goEmployer}
                         className="w-full py-4 px-6 bg-gradient-to-r from-gray-600 to-gray-800 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:from-gray-600 hover:to-gray-800 transition-all duration-300 ease-in-out transform hover:-translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-gray-300 flex items-center justify-center gap-2"
                     >
-                        <span>Browse Jobs</span>
+                        <span>Employer Side</span>
                     </button>
                 </div>
 

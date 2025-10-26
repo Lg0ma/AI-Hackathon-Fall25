@@ -13,7 +13,6 @@ from typing import List, Dict
 # Import AI routes and classes
 from ai_routes import router as ai_router
 from skill_interview import OllamaClient, SkillAnalyzer
-
 from routers.jobs_router import router as jobs_router
 from routers import inbox_router
 
