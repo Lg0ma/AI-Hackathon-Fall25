@@ -14,7 +14,12 @@ function Home() {
     return (
         <>
         <nav className="flex justify-between bg-gradient-to-r from-blue-700 to-blue-800 py-5 text-white px-15 shadow-md">
-            <div className="flex items-center text-5xl">Home</div>
+            <div className="flex items-center">
+                <div className="text-5xl">Home</div>
+                <button onClick={() => navigate("/inbox")} className="ml-8 text-xl bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded">
+                    Inbox
+                </button>
+            </div>
             <div>
             <img
                 onClick={goProfile}

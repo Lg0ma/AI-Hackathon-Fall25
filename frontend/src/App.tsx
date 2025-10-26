@@ -4,6 +4,7 @@ import InterviewPage from './pages/InterviewPage';
 import CreateAccount from './pages/CreateAccount';
 import LoginAccount from './pages/LoginAccount';
 import Home from './pages/Home';
+import Inbox from './pages/Inbox';
 import './App.css';
 import './index.css';
 
@@ -16,6 +17,7 @@ function App() {
         <Route path="/create-account" element={<CreateAccount />} />
         <Route path="/login" element={<LoginAccount />} />
         <Route path="/home" element={<Home />} />
+        <Route path="/inbox" element={<Inbox />} />
       </Routes>
     </BrowserRouter>
   );

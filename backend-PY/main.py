@@ -6,9 +6,12 @@ import whisper
 from fastapi.middleware.cors import CORSMiddleware
 import json
 import bcrypt
+from routers import inbox_router
 
 # --- FastAPI App Initialization ---
 app = FastAPI()
+
+app.include_router(inbox_router.router)
 
 origins = [
     "http://localhost:5173",
