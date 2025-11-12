@@ -1,0 +1,294 @@
+\documentclass[letterpaper,11pt]{article}
+
+\usepackage{latexsym}
+\usepackage[empty]{fullpage}
+\usepackage{titlesec}
+\usepackage{marvosym}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{verbatim}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage[english]{babel}
+\usepackage{tabularx}
+
+\input{glyphtounicode}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% Adjust margins
+\addtolength{\oddsidemargin}{-0.6in}
+\addtolength{\evensidemargin}{-0.5in}
+\addtolength{\textwidth}{1.19in}
+\addtolength{\topmargin}{-.7in}
+\addtolength{\textheight}{1.4in}
+
+\urlstyle{same}
+
+\raggedbottom
+\raggedright
+\setlength{\tabcolsep}{0in}
+
+% Sections formatting
+\titleformat{\section}{
+  \vspace{-4pt}\scshape\raggedright\large\bfseries
+}{}{0em}{}[\color{black}\titlerule \vspace{-5pt}]
+
+% Ensure that generated pdf is machine readable/ATS parsable
+\pdfgentounicode=1
+
+%-------------------------
+% Custom commands
+\newcommand{\resumeItem}[1]{
+  \item\small{
+    {#1 \vspace{-2pt}}
+  }
+}
+
+\newcommand{\resumeSubheading}[4]{
+  \vspace{-2pt}\item
+    \begin{tabular*}{1.0\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \textbf{#1} & \textbf{\small #2} \\
+      \textit{\small#3} & \textit{\small #4} \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\renewcommand\labelitemi{$\vcenter{\hbox{\tiny$\bullet$}}$}
+
+\newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0.0in, label={}]}
+\newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
+\newcommand{\resumeItemListStart}{\begin{itemize}}
+\newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-5pt}}
+
+%-------------------------------------------
+%%%%%%  RESUME STARTS HERE  %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+%----------HEADING----------
+% This section contains your contact information at the top of the resume
+% Replace the bracketed items with your actual information:
+% - [Your Full Name]: Your first and last name (e.g., John Smith)
+% - [Your Job Title/Trade]: Your profession or the job you're applying for 
+%   (e.g., Electrician, Welder, Warehouse Supervisor, CDL Driver)
+% - [Your Phone Number]: Best number to reach you (e.g., 555-123-4567) - REQUIRED
+% - [your.email@example.com]: Professional email address - OPTIONAL (delete this line if no email)
+% - [City, State]: Where you live (e.g., El Paso, TX)
+%
+% NOTE: If you don't have an email, remove the entire email line including the $|$ before it
+%
+% EXAMPLE:
+% {\Huge \scshape John Smith} \\ \vspace{3pt}
+% \small Certified Welder \\
+% \vspace{2pt}
+% \small
+% 915-555-1234 $|$
+% \href{mailto:jsmith@email.com}{jsmith@email.com} $|$
+% El Paso, TX
+%
+% EXAMPLE WITHOUT EMAIL:
+% {\Huge \scshape John Smith} \\ \vspace{3pt}
+% \small Certified Welder \\
+% \vspace{2pt}
+% \small
+% 915-555-1234 $|$ El Paso, TX
+%
+\begin{center}
+    {\Huge \scshape [Your Full Name]} \\ \vspace{3pt}
+    \small [Your Job Title/Trade] \\
+    \vspace{2pt}
+    \small
+    [Your Phone Number] $|$
+    \href{mailto:your.email@example.com}{your.email@example.com} $|$
+    [City, State]
+    \vspace{-8pt}
+\end{center}
+
+%-----------WORK EXPERIENCE-----------
+% This is the MOST IMPORTANT section - list your jobs in reverse chronological order (most recent first)
+% For each job, include:
+% - [Company Name]: The name of the company you worked for
+% - [Start Date] - [End Date]: When you worked there (e.g., "Jan 2020 - Present" or "May 2018 - Dec 2019")
+% - [Your Job Title]: Your official position (e.g., Warehouse Associate, Forklift Operator, Maintenance Technician)
+% - [City, State]: Where the job was located
+%
+% Under each job, list 3-4 bullet points describing what you did:
+% - Focus on ACHIEVEMENTS and RESULTS, not just duties
+% - Use numbers when possible (e.g., "Operated forklift to move 200+ pallets daily")
+% - Mention equipment you operated, safety records, efficiency improvements
+% - Include supervisory experience if you managed or trained others
+% - Highlight any awards, perfect attendance, or recognition you received
+%
+% TIPS: Start each bullet with an action word (Operated, Maintained, Supervised, Reduced, Improved)
+%       Be specific about what you accomplished, not just what you were supposed to do
+%
+% EXAMPLE OF ONE JOB:
+% \resumeSubheading
+%   {ABC Warehouse & Distribution}{May 2020 - Present}
+%   {Forklift Operator}{El Paso, TX}
+%   \resumeItemListStart
+%     \resumeItem{Operated sit-down and stand-up forklifts to move 300+ pallets daily with zero accidents over 3 years}
+%     \resumeItem{Trained 5 new employees on warehouse safety procedures and equipment operation}
+%     \resumeItem{Reduced loading time by 25\% through improved organization of staging areas}
+%     \resumeItem{Maintained 99.8\% inventory accuracy through careful attention to detail and proper documentation}
+%   \resumeItemListEnd
+%
+\section{Work Experience}
+\resumeSubHeadingListStart
+
+  \resumeSubheading
+    {[Company Name]}{[Start Date] - [End Date]}
+    {[Your Job Title]}{[City, State]}
+    \resumeItemListStart
+      \resumeItem{[Describe a key responsibility or achievement with specific results]}
+      \resumeItem{[Describe another responsibility focusing on what you accomplished]}
+      \resumeItem{[Highlight skills used and any improvements you made to processes or safety]}
+      \resumeItem{[Include any special projects, equipment operated, or supervisory duties]}
+    \resumeItemListEnd
+
+  \resumeSubheading
+    {[Company Name]}{[Start Date] - [End Date]}
+    {[Your Job Title]}{[City, State]}
+    \resumeItemListStart
+      \resumeItem{[Describe a key responsibility or achievement with specific results]}
+      \resumeItem{[Describe another responsibility focusing on what you accomplished]}
+      \resumeItem{[Highlight skills used and any improvements you made to processes or safety]}
+    \resumeItemListEnd
+
+  \resumeSubheading
+    {[Company Name]}{[Start Date] - [End Date]}
+    {[Your Job Title]}{[City, State]}
+    \resumeItemListStart
+      \resumeItem{[Describe a key responsibility or achievement with specific results]}
+      \resumeItem{[Describe another responsibility focusing on what you accomplished]}
+    \resumeItemListEnd
+
+\resumeSubHeadingListEnd
+\vspace{-15pt}
+
+%-----------SKILLS-----------
+% This section shows what you can do and what tools/equipment you know how to use
+% Divide your skills into three categories:
+%
+% 1. TECHNICAL SKILLS: List specific equipment, tools, and machinery you can operate
+%    Examples: Forklift (sit-down and stand-up), Pallet jack, MIG/TIG welding,
+%              Power tools (drills, saws, grinders), CNC machines, Backhoe,
+%              Overhead crane, Hand tools, Measuring instruments
+%
+% 2. CERTIFICATIONS & LICENSES: List any valid licenses or official certifications
+%    Examples: CDL Class A/B, Forklift certification, OSHA 10/30 hour,
+%              EPA certification, Journeyman electrician license,
+%              Crane operator certification, First Aid/CPR
+%
+% 3. CORE COMPETENCIES: List soft skills and work qualities that make you a good employee
+%    Examples: Safety compliance, Quality control, Team collaboration,
+%              Time management, Attention to detail, Problem-solving,
+%              Physical stamina, Reliable attendance, Blueprint reading
+%
+% TIP: Only list skills you actually have - employers may test you on these!
+%
+% EXAMPLE:
+% \resumeItemListStart
+%   \resumeItem{\textbf{Technical Skills:} Forklift operation (sit-down and stand-up), Pallet jack, 
+%               MIG welding, Power tools (drills, impact drivers, grinders), Hand tools, 
+%               Overhead crane, RF scanner, Inventory management systems}
+%   \resumeItem{\textbf{Certifications \& Licenses:} Forklift Certification (valid through Dec 2025), 
+%               OSHA 10-Hour Safety, First Aid/CPR, CDL Class B}
+%   \resumeItem{\textbf{Core Competencies:} Safety compliance, Quality control, Team leadership, 
+%               Problem-solving, Attention to detail, Physical stamina (lift 50+ lbs), 
+%               Reliable attendance}
+% \resumeItemListEnd
+%
+\section{Skills}
+\resumeSubHeadingListStart
+    \resumeItemListStart
+      \resumeItem{\textbf{Technical Skills:} [List relevant tools, equipment, machinery you can operate - e.g., Forklift, Welding equipment, Power tools, CNC machines]}
+      \resumeItem{\textbf{Certifications \& Licenses:} [List any valid licenses - e.g., CDL Class A, Forklift certification, OSHA 10/30]}
+      \resumeItem{\textbf{Core Competencies:} [List soft skills and work qualities - e.g., Safety compliance, Team leadership, Quality control, Problem-solving, Attention to detail]}
+    \resumeItemListEnd
+\resumeSubHeadingListEnd
+\vspace{-15pt}
+
+%-----------EDUCATION-----------
+% OPTIONAL SECTION: If you don't have formal education (high school diploma, GED, 
+% trade school, etc.), you can DELETE this entire section from \section{Education} 
+% to \vspace{-15pt}
+%
+% List your educational background - keep this simple and straightforward
+% Include:
+% - [School/Institution Name]: Name of high school, trade school, or community college
+% - [Graduation Date or "Present"]: When you graduated or if you're still attending
+%     Examples: "May 2018", "Expected May 2025", "2015-2017"
+% - [Degree/Diploma/Certificate]: What you earned
+%     Examples: "High School Diploma", "GED", "Associate Degree in Welding Technology",
+%               "Certificate in HVAC Technology", "Apprenticeship Program"
+% - [City, State]: Where the school is located
+%
+% NOTE: If you have multiple educational backgrounds, list the most recent first
+%       You can add another \resumeSubheading block for additional education
+%
+% EXAMPLE:
+% \resumeSubheading
+%   {El Paso Community College}{May 2019}
+%   {Certificate in Welding Technology}{El Paso, TX}
+%
+% ANOTHER EXAMPLE:
+% \resumeSubheading
+%   {Jefferson High School}{June 2015}
+%   {High School Diploma}{El Paso, TX}
+%
+% TO DELETE THIS SECTION: Remove everything from the line "\section{Education}" 
+% down to and including the line "\vspace{-15pt}" below
+%
+\section{Education}
+\resumeSubHeadingListStart
+  \resumeSubheading
+    {[School/Institution Name]}{[Graduation Date or "Present"]}
+    {[Degree/Diploma/Certificate]}{[City, State]}
+\resumeSubHeadingListEnd
+\vspace{-15pt}
+
+%-----------TRAINING & CERTIFICATIONS-----------
+% This section is CRITICAL for blue-collar jobs - many positions require specific certifications
+% List all relevant training, certifications, and licenses you've completed
+% For each item include:
+% - [Certification Name]: The official name of the certification or training
+% - [Issuing Organization]: Who gave you the certification (e.g., OSHA, NCCER, Red Cross)
+% - [Date obtained or "Valid through [Date]"]: When you got it or when it expires
+%
+% IMPORTANT CERTIFICATIONS TO INCLUDE (if you have them):
+% - OSHA 10-hour or 30-hour Safety Training
+% - Forklift Certification
+% - CDL (Commercial Driver's License) - specify class
+% - First Aid/CPR/AED
+% - Confined Space Entry
+% - Fall Protection
+% - Hazmat Training
+% - Lockout/Tagout (LOTO)
+% - Trade-specific licenses (Electrician, Plumber, HVAC, Welding certs)
+% - Equipment-specific training (Crane operator, Scissor lift, Aerial lift)
+%
+% TIP: Keep certifications current! Many expire and need renewal
+%      List the most important/recent certifications first
+%
+% EXAMPLES:
+% \resumeItem{\textbf{Forklift Operator Certification} - SafetyFirst Training, Valid through December 2025}
+% \resumeItem{\textbf{OSHA 10-Hour Construction Safety} - OSHA, Completed March 2023}
+% \resumeItem{\textbf{CDL Class A License} - Texas DMV, Valid through June 2026, No restrictions}
+% \resumeItem{\textbf{First Aid/CPR/AED} - American Red Cross, Valid through January 2026}
+% \resumeItem{\textbf{Confined Space Entry Training} - ABC Safety Services, Completed September 2024}
+%
+\section{Training \& Certifications}
+\resumeSubHeadingListStart
+    \resumeItem{\textbf{[Certification Name]} - [Issuing Organization], [Date obtained or "Valid through [Date]"]}
+    \resumeItem{\textbf{[Training Program Name]} - [Description of training], [Date completed]}
+    \resumeItem{\textbf{[License/Certification]} - [Details and expiration date if applicable]}
+    \resumeItem{\textbf{[Safety Training]} - [OSHA, First Aid, CPR, etc.], [Date completed]}
+\resumeSubHeadingListEnd
+\vspace{-16pt}
+
+\end{document}
