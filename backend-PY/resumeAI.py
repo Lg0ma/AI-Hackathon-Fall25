@@ -225,6 +225,37 @@ class ResumeAI:
 
         return normalized
 
+    def escape_latex(self, text):
+        """Escape special LaTeX characters in text."""
+        if not isinstance(text, str):
+            text = str(text)
+
+        # Remove or replace problematic whitespace
+        text = text.replace('\r\n', ' ').replace('\n', ' ').replace('\r', ' ')
+        # Collapse multiple spaces
+        text = ' '.join(text.split())
+
+        # IMPORTANT: Replace backslash FIRST to avoid corrupting other escape sequences
+        text = text.replace('\\', r'\textbackslash{}')
+
+        # Then replace other special characters
+        replacements = [
+            ('&', r'\&'),
+            ('%', r'\%'),
+            ('$', r'\$'),
+            ('#', r'\#'),
+            ('_', r'\_'),
+            ('{', r'\{'),
+            ('}', r'\}'),
+            ('~', r'\textasciitilde{}'),
+            ('^', r'\^{}'),
+        ]
+
+        for char, replacement in replacements:
+            text = text.replace(char, replacement)
+
+        return text
+
     def enhance_accomplishments_with_ai(self, accomplishments):
         """Use AI to enhance accomplishment descriptions."""
         prompt = f"""Enhance these job accomplishments to be more professional and impactful. Keep them truthful.
@@ -238,6 +269,7 @@ Instructions:
 - Use strong action verbs
 - Keep content truthful to the original
 - Return ONLY the enhanced bullet points, one per line, starting with the text (no dashes or bullets)
+- Each bullet point must be on a SINGLE line (no line breaks within a point)
 
 Enhanced accomplishments:"""
 
@@ -247,10 +279,16 @@ Enhanced accomplishments:"""
                 messages=[{'role': 'user', 'content': prompt}]
             )
             enhanced = response['message']['content'].strip()
-            # Split into lines and clean
-            lines = [line.strip().lstrip('-•* ') for line in enhanced.split('\n') if line.strip()]
+            # Split into lines and clean thoroughly
+            lines = []
+            for line in enhanced.split('\n'):
+                line = line.strip().lstrip('-•* ')
+                # Skip empty lines and common headers
+                if line and not line.lower().startswith(('enhanced', 'accomplishment', ':')):
+                    lines.append(line)
             return lines if lines else accomplishments
-        except:
+        except Exception as e:
+            print(f"  Warning: AI enhancement failed ({e}), using original text")
             return accomplishments
 
     def fill_template_programmatically(self, resume_data, template_content, enhance=True):
@@ -258,19 +296,19 @@ Enhanced accomplishments:"""
         import re
         filled = template_content
 
-        # 1. Contact info
-        filled = filled.replace('[Your Full Name]', resume_data['contact_info']['full_name'])
-        filled = filled.replace('[Your Job Title/Trade]', resume_data['contact_info']['job_title'])
-        filled = filled.replace('[Your Phone Number]', resume_data['contact_info']['phone_number'])
+        # 1. Contact info - escape special LaTeX characters
+        filled = filled.replace('[Your Full Name]', self.escape_latex(resume_data['contact_info']['full_name']))
+        filled = filled.replace('[Your Job Title/Trade]', self.escape_latex(resume_data['contact_info']['job_title']))
+        filled = filled.replace('[Your Phone Number]', self.escape_latex(resume_data['contact_info']['phone_number']))
 
         # Handle email
         if resume_data['contact_info']['email'].lower() == 'no':
             filled = re.sub(r'\\href\{mailto:your\.email@example\.com\}\{your\.email@example\.com\}\s*\$\|\$\s*\n?', '', filled)
         else:
-            filled = filled.replace('your.email@example.com', resume_data['contact_info']['email'])
+            filled = filled.replace('your.email@example.com', self.escape_latex(resume_data['contact_info']['email']))
 
         # Replace first [City, State] in contact section
-        filled = filled.replace('[City, State]', resume_data['contact_info']['location'], 1)
+        filled = filled.replace('[City, State]', self.escape_latex(resume_data['contact_info']['location']), 1)
 
         # 2. Work Experience - handle multiple jobs
         work_exp_section = re.search(r'%-----------WORK EXPERIENCE-----------(.*?)%-----------SKILLS-----------', filled, re.DOTALL)
@@ -288,57 +326,63 @@ Enhanced accomplishments:"""
                     accomplishments = self.enhance_accomplishments_with_ai(accomplishments)
 
                 new_work_exp += f"  \\resumeSubheading\n"
-                new_work_exp += f"    {{{job['company']}}}{{{job['start_date']} - {job['end_date']}}}\n"
-                new_work_exp += f"    {{{job['title']}}}{{{job['location']}}}\n"
+                new_work_exp += f"    {{{self.escape_latex(job['company'])}}}{{{self.escape_latex(job['start_date'])} - {self.escape_latex(job['end_date'])}}}\n"
+                new_work_exp += f"    {{{self.escape_latex(job['title'])}}}{{{self.escape_latex(job['location'])}}}\n"
                 new_work_exp += f"    \\resumeItemListStart\n"
 
                 for acc in accomplishments:
-                    # Escape any special LaTeX characters if needed
-                    escaped_acc = acc.replace('\\', '\\\\')  # Escape backslashes
+                    # Escape special LaTeX characters in accomplishment text
+                    if not acc or not acc.strip():
+                        continue  # Skip empty accomplishments
+                    escaped_acc = self.escape_latex(acc)
+                    # Validate the escaped text doesn't have unmatched braces
+                    if escaped_acc.count('{') != escaped_acc.count('}'):
+                        print(f"    Warning: Unmatched braces in accomplishment, using original: {acc[:50]}...")
+                        escaped_acc = self.escape_latex(acc)
                     new_work_exp += f"      \\resumeItem{{{escaped_acc}}}\n"
 
                 new_work_exp += f"    \\resumeItemListEnd\n\n"
 
             new_work_exp += "\\resumeSubHeadingListEnd\n\\vspace{-15pt}\n\n%-----------SKILLS-----------"
 
-            # Replace the work experience section
+            # Replace the work experience section using lambda to avoid backslash interpretation
             filled = re.sub(
                 r'%-----------WORK EXPERIENCE-----------(.*?)%-----------SKILLS-----------',
-                new_work_exp,
+                lambda m: new_work_exp,
                 filled,
                 flags=re.DOTALL
             )
 
-        # 3. Skills
-        skills_list = ', '.join(resume_data['skills']['technical_skills'])
-        certs_list = ', '.join(resume_data['skills']['certifications_licenses'])
-        comp_list = ', '.join(resume_data['skills']['core_competencies'])
+        # 3. Skills - escape special LaTeX characters
+        skills_list = ', '.join([self.escape_latex(s) for s in resume_data['skills']['technical_skills']])
+        certs_list = ', '.join([self.escape_latex(c) for c in resume_data['skills']['certifications_licenses']])
+        comp_list = ', '.join([self.escape_latex(c) for c in resume_data['skills']['core_competencies']])
 
-        # Replace skills placeholders
+        # Replace skills placeholders using lambda to avoid backslash interpretation
         filled = re.sub(
             r'\[List relevant tools.*?\]',
-            skills_list,
+            lambda m: skills_list,
             filled
         )
         filled = re.sub(
             r'\[List any valid licenses.*?\]',
-            certs_list,
+            lambda m: certs_list,
             filled
         )
         filled = re.sub(
             r'\[List soft skills.*?\]',
-            comp_list,
+            lambda m: comp_list,
             filled
         )
 
-        # 4. Education
+        # 4. Education - escape special LaTeX characters
         if resume_data['education']:
             edu = resume_data['education'][0]
-            filled = re.sub(r'\[School/Institution Name\]', edu['institution'], filled, count=1)
-            filled = re.sub(r'\[Graduation Date or "Present"\]', edu['date'], filled, count=1)
-            filled = re.sub(r'\[Degree/Diploma/Certificate\]', edu['credential'], filled, count=1)
+            filled = re.sub(r'\[School/Institution Name\]', lambda m: self.escape_latex(edu['institution']), filled, count=1)
+            filled = re.sub(r'\[Graduation Date or "Present"\]', lambda m: self.escape_latex(edu['date']), filled, count=1)
+            filled = re.sub(r'\[Degree/Diploma/Certificate\]', lambda m: self.escape_latex(edu['credential']), filled, count=1)
             # Handle [City, State] in education (the remaining ones)
-            filled = filled.replace('[City, State]', edu['location'])
+            filled = filled.replace('[City, State]', self.escape_latex(edu['location']))
 
         # 5. Certifications
         cert_section = re.search(r'%-----------TRAINING & CERTIFICATIONS-----------(.*?)\\end\{document\}', filled, re.DOTALL)
@@ -347,17 +391,27 @@ Enhanced accomplishments:"""
             new_cert_section += "\\section{Training \\& Certifications}\n\\resumeSubHeadingListStart\n"
 
             for cert in resume_data['certifications_detailed']:
-                details = f" - {cert['details']}" if cert['details'] and cert['details'].lower() != 'no' else ''
-                new_cert_section += f"    \\resumeItem{{\\textbf{{{cert['name']}}} - {cert['organization']}, {cert['date']}{details}}}\n"
+                details = f" - {self.escape_latex(cert['details'])}" if cert['details'] and cert['details'].lower() != 'no' else ''
+                new_cert_section += f"    \\resumeItem{{\\textbf{{{self.escape_latex(cert['name'])}}} - {self.escape_latex(cert['organization'])}, {self.escape_latex(cert['date'])}{details}}}\n"
 
             new_cert_section += "\\resumeSubHeadingListEnd\n\\vspace{-16pt}\n\n\\end{document}"
 
+            # Replace using lambda to avoid backslash interpretation
             filled = re.sub(
                 r'%-----------TRAINING & CERTIFICATIONS-----------(.*?)\\end\{document\}',
-                new_cert_section,
+                lambda m: new_cert_section,
                 filled,
                 flags=re.DOTALL
             )
+
+        # Debug: Save intermediate version to help diagnose issues
+        debug_file = os.path.join(self.base_path, "debug_filled.tex")
+        try:
+            with open(debug_file, 'w', encoding='utf-8') as f:
+                f.write(filled)
+            print(f"\n  Debug: Saved filled template to {debug_file} for inspection")
+        except Exception as e:
+            print(f"  Debug: Could not save debug file: {e}")
 
         return filled
 
