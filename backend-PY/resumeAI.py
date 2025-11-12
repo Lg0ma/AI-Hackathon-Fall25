@@ -227,22 +227,31 @@ class ResumeAI:
 
     def escape_latex(self, text):
         """Escape special LaTeX characters in text."""
-        # Define replacements for special LaTeX characters
-        replacements = {
-            '&': r'\&',
-            '%': r'\%',
-            '$': r'\$',
-            '#': r'\#',
-            '_': r'\_',
-            '{': r'\{',
-            '}': r'\}',
-            '~': r'\textasciitilde{}',
-            '^': r'\^{}',
-            '\\': r'\textbackslash{}',
-        }
+        if not isinstance(text, str):
+            text = str(text)
 
-        # Apply replacements
-        for char, replacement in replacements.items():
+        # Remove or replace problematic whitespace
+        text = text.replace('\r\n', ' ').replace('\n', ' ').replace('\r', ' ')
+        # Collapse multiple spaces
+        text = ' '.join(text.split())
+
+        # IMPORTANT: Replace backslash FIRST to avoid corrupting other escape sequences
+        text = text.replace('\\', r'\textbackslash{}')
+
+        # Then replace other special characters
+        replacements = [
+            ('&', r'\&'),
+            ('%', r'\%'),
+            ('$', r'\$'),
+            ('#', r'\#'),
+            ('_', r'\_'),
+            ('{', r'\{'),
+            ('}', r'\}'),
+            ('~', r'\textasciitilde{}'),
+            ('^', r'\^{}'),
+        ]
+
+        for char, replacement in replacements:
             text = text.replace(char, replacement)
 
         return text
@@ -260,6 +269,7 @@ Instructions:
 - Use strong action verbs
 - Keep content truthful to the original
 - Return ONLY the enhanced bullet points, one per line, starting with the text (no dashes or bullets)
+- Each bullet point must be on a SINGLE line (no line breaks within a point)
 
 Enhanced accomplishments:"""
 
@@ -269,10 +279,16 @@ Enhanced accomplishments:"""
                 messages=[{'role': 'user', 'content': prompt}]
             )
             enhanced = response['message']['content'].strip()
-            # Split into lines and clean
-            lines = [line.strip().lstrip('-•* ') for line in enhanced.split('\n') if line.strip()]
+            # Split into lines and clean thoroughly
+            lines = []
+            for line in enhanced.split('\n'):
+                line = line.strip().lstrip('-•* ')
+                # Skip empty lines and common headers
+                if line and not line.lower().startswith(('enhanced', 'accomplishment', ':')):
+                    lines.append(line)
             return lines if lines else accomplishments
-        except:
+        except Exception as e:
+            print(f"  Warning: AI enhancement failed ({e}), using original text")
             return accomplishments
 
     def fill_template_programmatically(self, resume_data, template_content, enhance=True):
@@ -316,7 +332,13 @@ Enhanced accomplishments:"""
 
                 for acc in accomplishments:
                     # Escape special LaTeX characters in accomplishment text
+                    if not acc or not acc.strip():
+                        continue  # Skip empty accomplishments
                     escaped_acc = self.escape_latex(acc)
+                    # Validate the escaped text doesn't have unmatched braces
+                    if escaped_acc.count('{') != escaped_acc.count('}'):
+                        print(f"    Warning: Unmatched braces in accomplishment, using original: {acc[:50]}...")
+                        escaped_acc = self.escape_latex(acc)
                     new_work_exp += f"      \\resumeItem{{{escaped_acc}}}\n"
 
                 new_work_exp += f"    \\resumeItemListEnd\n\n"
@@ -381,6 +403,15 @@ Enhanced accomplishments:"""
                 filled,
                 flags=re.DOTALL
             )
+
+        # Debug: Save intermediate version to help diagnose issues
+        debug_file = os.path.join(self.base_path, "debug_filled.tex")
+        try:
+            with open(debug_file, 'w', encoding='utf-8') as f:
+                f.write(filled)
+            print(f"\n  Debug: Saved filled template to {debug_file} for inspection")
+        except Exception as e:
+            print(f"  Debug: Could not save debug file: {e}")
 
         return filled
 
