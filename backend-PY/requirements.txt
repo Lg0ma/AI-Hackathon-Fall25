@@ -22,6 +22,8 @@ torchvision
 tqdm
 typing_extensions
 urllib3
+sounddevice
+gTTS
 # Core FastAPI dependencies
 fastapi
 uvicorn

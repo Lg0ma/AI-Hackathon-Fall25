@@ -29,6 +29,14 @@ from skill_interview import OllamaClient, SkillAnalyzer
 from simple_interview_endpoint import router as simple_interview_router
 from live_interview_endpoint import router as live_interview_router
 
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='[%(asctime)s] [%(levelname)s] %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+logger = logging.getLogger(__name__)
+
 # Try to import TTS library (gTTS for Google Text-to-Speech)
 try:
     from gtts import gTTS
@@ -39,14 +47,6 @@ try:
 except ImportError:
     TTS_AVAILABLE = False
     logger.warning("gTTS not installed. Install with: pip install gTTS")
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='[%(asctime)s] [%(levelname)s] %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
-)
-logger = logging.getLogger(__name__)
 
 # Audio conversion utility
 def convert_to_wav(input_path: str, output_path: str) -> bool:
@@ -177,7 +177,7 @@ logger.info("="*60)
 # Load faster-whisper-large-v3 model
 logger.info("Loading faster-whisper 'large-v3' model...")
 logger.info("Device: CUDA (GPU) | Compute Type: float16")
-model = WhisperModel("large-v3", device="cuda", compute_type="float16")
+model = WhisperModel("large-v3", device="cpu", compute_type="int8")
 logger.info("✅ faster-whisper-large-v3 model loaded successfully on CUDA")
 
 # Initialize Ollama client for Mistral

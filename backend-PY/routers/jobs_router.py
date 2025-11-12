@@ -1,8 +1,9 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, BackgroundTasks
 from database import supabase
 from datetime import datetime
 from pydantic import BaseModel
 import uuid
+from inbox_matching import match_job_to_users
 
 
 router = APIRouter()
@@ -48,7 +49,7 @@ class JobListing(BaseModel):
     postal_code: str
 
 @router.post("/postjob")
-async def create_job(job: JobListing):
+async def create_job(job: JobListing, background_tasks: BackgroundTasks):
     try:
         new_id = str(uuid.uuid4())
         created_at = datetime.utcnow().isoformat()
@@ -67,7 +68,13 @@ async def create_job(job: JobListing):
         response = supabase.table("job_listings").insert(data).execute()
 
         if response.data:
-            return {"message": "Job created successfully", "job_id": new_id}
+            # After successfully creating the job, trigger the background task
+            background_tasks.add_task(
+                match_job_to_users,
+                job_id=new_id,
+                job_description=job.description
+            )
+            return {"message": "Job created successfully and matching process started", "job_id": new_id}
         else:
             raise HTTPException(status_code=400, detail="Failed to insert job into Supabase")
 
