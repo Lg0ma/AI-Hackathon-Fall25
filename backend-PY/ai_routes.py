@@ -284,7 +284,7 @@ async def extract_skills(request: JobDescriptionRequest):
 
         # Extract skills
         skills = analyzer.analyze_job_description(request.job_description)
-
+        print("========== SKILLS ===== \n", skills)
         if not skills:
             raise HTTPException(
                 status_code=500,

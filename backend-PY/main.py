@@ -29,6 +29,7 @@ from skill_interview import OllamaClient, SkillAnalyzer
 from simple_interview_endpoint import router as simple_interview_router
 from live_interview_endpoint import router as live_interview_router
 from interview_room import router as interview_room_router, set_models as set_interview_room_models
+from routers.applications_router import router as applications_router
 
 # Configure logging
 logging.basicConfig(
@@ -168,9 +169,13 @@ app.include_router(applications_router, prefix="/api", tags=["applications"]) # 
 app.include_router(ai_router)
 app.include_router(simple_interview_router)
 app.include_router(live_interview_router)
+app.include_router(interview_room_router)
+app.include_router(applications_router)
 print("[OK] AI routes registered at /ai")
 print("[OK] Simple interview routes registered at /simple-interview")
 print("[OK] Live interview routes registered at /live-interview")
+print("[OK] Interview room routes registered at /live-interview")
+print("[OK] Jobs Router routes registered at /applications-router")
 
 # --- AI Model Loading ---
 logger.info("="*60)
@@ -195,8 +200,6 @@ else:
 logger.info("Configuring Interview Room module...")
 set_interview_room_models(model, ollama_client_global)
 logger.info("✅ Interview Room configured")
-
-logger.info("="*60)
 
 logger.info("="*60)
 

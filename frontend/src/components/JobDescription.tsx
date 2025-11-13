@@ -35,7 +35,7 @@ export const JobDescription: React.FC<JobDescriptionProps> = ({
     };
 
     const openAIInterview = () => {
-        navigate('/ai-interview-room');
+        navigate(`/ai-interview-room/${employer_id}`);
     }
 
     // Calculate days ago
@@ -102,7 +102,7 @@ export const JobDescription: React.FC<JobDescriptionProps> = ({
                         <button
                         onClick={openAIInterview}
                         className="px-8 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold transition-colors">
-                            TEST AI QUESTIONS
+                            Apply
                         </button>
                         <button className="p-3 bg-neutral-800 hover:bg-neutral-700 rounded-lg transition-colors">
                             <MoreHorizontal className="w-5 h-5" />

@@ -39,7 +39,7 @@ function App() {
         <Route path="/employer" element={<EmployerDashboard />} />
         <Route path='/employer/create-job' element={<CreateJobPosting />} />
         <Route path='/employer/my-jobs' element={<ManageJobs />} />
-        <Route path="/ai-interview-room" element={<AIInterviewRoomPage />} />
+        <Route path="/ai-interview-room/:jobId" element={<AIInterviewRoomPage />} />
       </Routes>
     </BrowserRouter>
   );
