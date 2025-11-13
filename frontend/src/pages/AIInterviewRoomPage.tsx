@@ -2,12 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import AIInterviewRoom from '../components/AIInterviewRoom';
 
+
 const API_BASE_URL = 'http://127.0.0.1:8000';
+// TODO: Get score and do the insert when they click on the Return to Home button
 
 interface Job {
     title: string;
     description: string;
 }
+
+type Status = "reject" | "followup" | "hire";
 
 function AIInterviewRoomPage() {
     const navigate = useNavigate();
@@ -69,6 +73,39 @@ function AIInterviewRoomPage() {
         setIsComplete(true);
     };
 
+    const submitApplication = async (score: number, jobId: number | string) => {
+        const appliedAt = new Date().toISOString();
+        let status = "";
+        if (score < 50)  {
+            status = 'reject' as Status;
+        } else if (score >= 50 && score < 90) {
+            status = 'followup' as Status;
+        } else {
+            status = 'hire' as Status;
+        }
+        
+        try {
+            console.log(jobId, typeof(jobId), appliedAt, typeof(appliedAt), score, typeof(score))
+            const response = await fetch(`${API_BASE_URL}/applications-router/submit-interview`, {
+                method: 'POST',
+                headers: { 'Content-Type' : 'application/json',},
+                body: JSON.stringify({
+                    user_id: "11111111-1111-1111-1111-111111111111",
+                    job_listing_id: jobId,
+                    status: status,
+                    applied_at: appliedAt,
+                    score: Number(score)
+                })
+            });
+
+            const data = await response.json();
+        } catch(error) {
+            console.error(error);
+            // setMessage("Network error or server not reachable");
+        }
+    
+    }
+
     // Loading state
     if (loading) {
         return (
@@ -119,28 +156,28 @@ function AIInterviewRoomPage() {
                     </p>
                     
                     <div className="text-center mb-8">
-                        <div className="text-6xl font-bold text-blue-600 mb-2">{score}%</div>
+                        {/* <div className="text-6xl font-bold text-blue-600 mb-2">{score}%</div> */}
                         <div className="text-gray-600">
-                            {correctCount} out of {totalCount} questions answered correctly
+                            All questions have been answered
                         </div>
                     </div>
 
                     <div className="space-y-4 mb-8">
                         {finalResults.map((result, idx) => (
                             <div key={idx} className={`p-4 rounded-lg border-2 ${
-                                result.isCorrect ? 'bg-green-50 border-green-200' : 'bg-orange-50 border-orange-200'
+                                'bg-green-50 border-green-200'
                             }`}>
                                 <div className="font-semibold text-gray-800 mb-2">
-                                    Question {idx + 1}: {result.isCorrect ? '✅' : '⚠️'}
+                                    Question {idx + 1}
                                 </div>
-                                <div className="text-sm text-gray-600 italic mb-2">"{result.transcript}"</div>
-                                <div className="text-sm text-gray-700">{result.feedback}</div>
+                                <div className="text-sm text-gray-600 italic mb-2">Response: "{result.transcript}"</div>
+                                {/* <div className="text-sm text-gray-700">{result.feedback}</div> */}
                             </div>
                         ))}
                     </div>
 
                     <button
-                        onClick={() => navigate('/home')}
+                        onClick={() => submitApplication(score, jobId)}
                         className="w-full px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
                     >
                         Return to Home
