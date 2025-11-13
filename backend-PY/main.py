@@ -97,6 +97,7 @@ def convert_to_wav(input_path: str, output_path: str) -> bool:
         return False
 
 from routers.jobs_router import router as jobs_router
+from routers.applications_router import router as applications_router # Import the new router
 from routers import inbox_router
 
 # --- FastAPI App Initialization ---
@@ -144,6 +145,8 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         },
     )
 
+app.include_router(inbox_router.router)
+
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
@@ -161,8 +164,8 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(inbox_router.router)
 app.include_router(jobs_router, prefix="/api", tags=["jobs"])
+app.include_router(applications_router, prefix="/api", tags=["applications"]) # Include the new router
 app.include_router(ai_router)
 app.include_router(simple_interview_router)
 app.include_router(live_interview_router)

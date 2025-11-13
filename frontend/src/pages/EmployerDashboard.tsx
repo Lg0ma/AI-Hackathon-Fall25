@@ -28,7 +28,7 @@ const EmployerDashboard = () => {
                 </div>
                 <div className="flex items-center gap-4">
                 <span className="text-muted-foreground">Welcome back, Company Name</span>
-                <button onClick={goHome}>Logout</button>
+                <button onClick={goHome} className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">Logout</button>
                 </div>
             </div>
             </div>
@@ -48,7 +48,7 @@ const EmployerDashboard = () => {
                 </p>
                 </div>
                 <button 
-                className="gap-2"
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2"
                 onClick={() => navigate("/employer/create-job")}
                 >
                 <Plus className="w-5 h-5" />
@@ -80,7 +80,7 @@ const EmployerDashboard = () => {
             <h3 className="text-xl font-semibold text-foreground mb-6">Quick Actions</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <button
-                className="justify-start h-auto py-4 px-6"
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors flex items-center justify-start h-auto py-4 px-6"
                 onClick={() => navigate("/employer/my-jobs")}
                 >
                 <Briefcase className="w-5 h-5 mr-3" />
@@ -90,7 +90,7 @@ const EmployerDashboard = () => {
                 </div>
                 </button>
                 <button
-                className="justify-start h-auto py-4 px-6"
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors flex items-center justify-start h-auto py-4 px-6"
                 >
                 <Users className="w-5 h-5 mr-3" />
                 <div className="text-left">
