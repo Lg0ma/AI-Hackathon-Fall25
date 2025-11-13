@@ -1,8 +1,37 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Briefcase, Plus, Users, TrendingUp } from "lucide-react";
+import Calendar from "../components/Calendar";
 
 const EmployerDashboard = () => {
     const navigate = useNavigate();
+    const [employerName, setEmployerName] = useState<string>("Company Name");
+    const [loading, setLoading] = useState(true);
+    
+    // Hardcoded employer ID - replace with actual auth later
+    const employerId = "cbf96618-3bad-4e21-89d8-a900494da25a";
+
+    useEffect(() => {
+        const fetchEmployer = async () => {
+            try {
+                const response = await fetch(
+                    `http://localhost:8000/api/employer/${employerId}`
+                );
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.name) {
+                        setEmployerName(data.name);
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching employer:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchEmployer();
+    }, [employerId]);
 
     const stats = [
         { label: "Active Jobs", value: "10", icon: Briefcase, color: "text-blue-600" },
@@ -27,7 +56,10 @@ const EmployerDashboard = () => {
                 <h1 className="text-2xl font-bold text-foreground">Jale Employer</h1>
                 </div>
                 <div className="flex items-center gap-4">
-                <span className="text-muted-foreground">Welcome back, Company Name</span>
+                <span className="text-muted-foreground">
+                    {loading ? "Loading..." : `Welcome back, ${employerName}`}
+                </span>
+                <Calendar size="medium" />
                 <button onClick={goHome} className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">Logout</button>
                 </div>
             </div>

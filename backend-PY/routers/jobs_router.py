@@ -87,11 +87,28 @@ async def get_employer_jobs(employer_id: str):
     try:
         # Fetch ALL jobs for this employer
         response = supabase.table("job_listings").select(
-            "employer_id, title, description, expected_skills, "
+            "id, employer_id, title, description, expected_skills, "
             "years_of_experience_required, created_at, postal_code"
         ).eq("employer_id", employer_id).execute()
 
         # Return empty list if no jobs found (not 404)
         return response.data  # Returns all jobs, not just [0]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/employer/{employer_id}")
+async def get_employer(employer_id: str):
+    try:
+        # Fetch employer details by ID
+        response = supabase.table("employer").select(
+            "id, name, description, created_at"
+        ).eq("id", employer_id).execute()
+
+        if not response.data:
+            raise HTTPException(status_code=404, detail="Employer not found")
+
+        return response.data[0]
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
