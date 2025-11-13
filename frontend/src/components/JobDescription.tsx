@@ -34,6 +34,10 @@ export const JobDescription: React.FC<JobDescriptionProps> = ({
         navigate(`/interview-session/${employer_id}`);
     };
 
+    const openAIInterview = () => {
+        navigate('/ai-interview-room');
+    }
+
     // Calculate days ago
     const getDaysAgo = (dateString: string) => {
         const date = new Date(dateString);
@@ -94,6 +98,11 @@ export const JobDescription: React.FC<JobDescriptionProps> = ({
                         onClick={openInterviewSession}
                         className="px-8 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold transition-colors">
                             Start Interview
+                        </button>
+                        <button
+                        onClick={openAIInterview}
+                        className="px-8 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold transition-colors">
+                            TEST AI QUESTIONS
                         </button>
                         <button className="p-3 bg-neutral-800 hover:bg-neutral-700 rounded-lg transition-colors">
                             <MoreHorizontal className="w-5 h-5" />

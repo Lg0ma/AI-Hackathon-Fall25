@@ -12,6 +12,7 @@ import JobDetailsPage from './pages/JobDetailsPage';
 import EmployerDashboard from './pages/EmployerDashboard';
 import CreateJobPosting from './pages/CreateJobPosting';
 import ManageJobs from './pages/ManageJobs';
+import AIInterviewRoomPage from './pages/AIInterviewRoomPage';
 import './App.css';
 import './index.css';
 
@@ -32,7 +33,7 @@ function App() {
         <Route path="/employer" element={<EmployerDashboard />} />
         <Route path='/employer/create-job' element={<CreateJobPosting />} />
         <Route path='/employer/my-jobs' element={<ManageJobs />} />
-
+        <Route path="/ai-interview-room" element={<AIInterviewRoomPage />} />
       </Routes>
     </BrowserRouter>
   );
