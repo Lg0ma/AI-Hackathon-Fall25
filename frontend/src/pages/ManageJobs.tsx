@@ -3,10 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus, MapPin, Calendar, Users } from "lucide-react";
 
 interface Job {
+  id?: string;
   employer_id: string;
   title: string;
   description: string;
-  expected_skills: string | null;
+  expected_skills: string[] | string | null;
   years_of_experience_required: number;
   created_at: string;
   postal_code: string;
@@ -115,7 +116,7 @@ const ManageJobs = () => {
           <div className="grid grid-cols-1 gap-6">
             {jobs.map((job, index) => (
               <div
-                key={job.employer_id + index}
+                key={job.id || `${job.employer_id}-${job.created_at}-${index}`}
                 className="bg-white rounded-xl shadow-md border border-gray-200 p-6 hover:shadow-lg transition-shadow"
               >
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -154,19 +155,32 @@ const ManageJobs = () => {
                     <div className="mt-3 flex flex-wrap gap-2">
                       {job.expected_skills ? (
                         <>
-                          {job.expected_skills.split(",").slice(0, 5).map((skill, skillIndex) => (
-                            <span
-                              key={skillIndex}
-                              className="bg-blue-50 text-blue-700 text-xs font-medium px-2.5 py-1 rounded"
-                            >
-                              {skill.trim()}
-                            </span>
-                          ))}
-                          {job.expected_skills.split(",").length > 5 && (
-                            <span className="bg-gray-100 text-gray-600 text-xs font-medium px-2.5 py-1 rounded">
-                              +{job.expected_skills.split(",").length - 5} more
-                            </span>
-                          )}
+                          {(() => {
+                            // Handle both array and string formats
+                            const skillsArray = Array.isArray(job.expected_skills) 
+                              ? job.expected_skills 
+                              : typeof job.expected_skills === 'string' 
+                                ? job.expected_skills.split(',').map(s => s.trim())
+                                : [];
+                            
+                            return (
+                              <>
+                                {skillsArray.slice(0, 5).map((skill, skillIndex) => (
+                                  <span
+                                    key={skillIndex}
+                                    className="bg-blue-50 text-blue-700 text-xs font-medium px-2.5 py-1 rounded"
+                                  >
+                                    {skill}
+                                  </span>
+                                ))}
+                                {skillsArray.length > 5 && (
+                                  <span className="bg-gray-100 text-gray-600 text-xs font-medium px-2.5 py-1 rounded">
+                                    +{skillsArray.length - 5} more
+                                  </span>
+                                )}
+                              </>
+                            );
+                          })()}
                         </>
                       ) : (
                         <span className="text-gray-400 text-sm italic">No skills specified</span>

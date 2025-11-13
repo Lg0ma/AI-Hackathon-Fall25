@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import profilePic from "../public/professional_pic copy.png";
 import { JobCard } from "./JobCard";
 import { JobDescription } from "./JobDescription";
+import Calendar from "./Calendar";
 import type { Job, InboxItem } from "../types";
 
 interface JobListingPageProps {
@@ -110,7 +111,8 @@ function JobListingPage({ endpoint, pageType, description }: JobListingPageProps
                         {pageType === 'Home' ? 'Inbox' : 'Home'}
                     </button>
                 </div>
-                <div>
+                <div className="flex items-center gap-3">
+                    <Calendar />
                     <img
                         onClick={goProfile}
                         src={profilePic}
