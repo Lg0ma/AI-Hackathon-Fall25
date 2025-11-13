@@ -100,6 +100,131 @@ async def health_check():
     }
 
 
+@router.post("/test-validation")
+async def test_resume_validation():
+    """
+    Test endpoint to validate resume data cleaning and formatting
+
+    Loads test_resume_data.json and shows before/after validation
+
+    **Returns:**
+    - original_data: Raw test data
+    - cleaned_data: Data after validation and formatting
+    - validation_report: Summary of what was cleaned
+    """
+    import json
+    import os
+
+    logger.info("=" * 60)
+    logger.info("[Resume Test] TEST VALIDATION ENDPOINT")
+    logger.info("=" * 60)
+
+    # Validate resume_ai is loaded
+    if resume_ai is None:
+        logger.error("[Resume Test] ResumeAI not initialized!")
+        raise HTTPException(
+            status_code=503,
+            detail="Resume generator not loaded."
+        )
+
+    try:
+        # Load test data
+        test_file_path = os.path.join(os.path.dirname(__file__), "test_resume_data.json")
+
+        if not os.path.exists(test_file_path):
+            raise HTTPException(
+                status_code=404,
+                detail="Test data file not found. Please ensure test_resume_data.json exists."
+            )
+
+        with open(test_file_path, 'r', encoding='utf-8') as f:
+            original_data = json.load(f)
+
+        logger.info("[Resume Test] Loaded test data")
+        logger.info("[Resume Test] Original data preview:")
+        logger.info(f"[Resume Test]   Job Title (Q2): {original_data['interview_responses']['contact_information'].get('Q2_job_title')}")
+        logger.info(f"[Resume Test]   Email: {original_data['interview_responses']['contact_information'].get('Q4_email')}")
+        logger.info(f"[Resume Test]   Job 1 Title (Q8): {original_data['interview_responses']['work_experience_job1'].get('Q8_title')}")
+        logger.info(f"[Resume Test]   Job 2 Company: {original_data['interview_responses']['work_experience_job2'].get('Q15_company')}")
+        logger.info(f"[Resume Test]   Skills (Q30): {original_data['interview_responses']['skills'].get('Q30_technical_skills')[:100]}...")
+
+        # Apply validation and cleaning
+        logger.info("[Resume Test] Applying validation and cleaning...")
+        cleaned_data = resume_ai.validate_and_clean_all_responses(original_data)
+
+        # Normalize to see final structure
+        logger.info("[Resume Test] Normalizing data...")
+        normalized_data = resume_ai.normalize_interview_data(cleaned_data)
+
+        logger.info("[Resume Test] Validation complete!")
+        logger.info("[Resume Test] Cleaned data preview:")
+        logger.info(f"[Resume Test]   Job Title: {normalized_data['contact_info'].get('job_title')}")
+        logger.info(f"[Resume Test]   Email: {normalized_data['contact_info'].get('email')}")
+        logger.info(f"[Resume Test]   Number of jobs: {len(normalized_data['work_experience'])}")
+        if normalized_data['work_experience']:
+            logger.info(f"[Resume Test]   Job 1 Title: {normalized_data['work_experience'][0].get('title')}")
+            logger.info(f"[Resume Test]   Job 1 Company: {normalized_data['work_experience'][0].get('company')}")
+            logger.info(f"[Resume Test]   Job 1 Accomplishments: {len(normalized_data['work_experience'][0].get('accomplishments', []))}")
+        logger.info(f"[Resume Test]   Technical Skills: {normalized_data['skills']['technical_skills'][:5]}")
+        logger.info("=" * 60)
+
+        # Create validation report
+        validation_report = {
+            "contact_info": {
+                "job_title_original": original_data['interview_responses']['contact_information'].get('Q2_job_title'),
+                "job_title_cleaned": normalized_data['contact_info'].get('job_title'),
+                "email_original": original_data['interview_responses']['contact_information'].get('Q4_email'),
+                "email_cleaned": normalized_data['contact_info'].get('email'),
+                "location_original": original_data['interview_responses']['contact_information'].get('Q5_location'),
+                "location_cleaned": normalized_data['contact_info'].get('location')
+            },
+            "work_experience": {
+                "job1_title_original": original_data['interview_responses']['work_experience_job1'].get('Q8_title'),
+                "job1_title_cleaned": normalized_data['work_experience'][0].get('title') if normalized_data['work_experience'] else None,
+                "job1_location_original": original_data['interview_responses']['work_experience_job1'].get('Q7_location'),
+                "job1_location_cleaned": normalized_data['work_experience'][0].get('location') if normalized_data['work_experience'] else None,
+                "job2_company_original": original_data['interview_responses']['work_experience_job2'].get('Q15_company'),
+                "job2_filtered_out": len(normalized_data['work_experience']) == 1,
+                "total_jobs_in_resume": len(normalized_data['work_experience'])
+            },
+            "skills": {
+                "technical_skills_original": original_data['interview_responses']['skills'].get('Q30_technical_skills'),
+                "technical_skills_cleaned": ", ".join(normalized_data['skills']['technical_skills'][:5]) + "..." if len(normalized_data['skills']['technical_skills']) > 5 else ", ".join(normalized_data['skills']['technical_skills']),
+                "certifications_original": original_data['interview_responses']['skills'].get('Q31_certifications_licenses'),
+                "certifications_cleaned": ", ".join(normalized_data['skills']['certifications_licenses']),
+                "competencies_original": original_data['interview_responses']['skills'].get('Q32_core_competencies')[:100] + "...",
+                "competencies_cleaned": ", ".join(normalized_data['skills']['core_competencies'][:5]) + "..." if len(normalized_data['skills']['core_competencies']) > 5 else ", ".join(normalized_data['skills']['core_competencies'])
+            },
+            "summary": {
+                "validation_applied": True,
+                "empty_job_filtered": len(normalized_data['work_experience']) < 2,
+                "skills_extracted_as_list": isinstance(normalized_data['skills']['technical_skills'], list),
+                "job_title_formatted": normalized_data['work_experience'][0].get('title') != original_data['interview_responses']['work_experience_job1'].get('Q8_title') if normalized_data['work_experience'] else False
+            }
+        }
+
+        return {
+            "message": "Validation test completed successfully",
+            "validation_report": validation_report,
+            "normalized_data": normalized_data,
+            "test_passed": validation_report['summary']['empty_job_filtered'] and validation_report['summary']['skills_extracted_as_list']
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("=" * 60)
+        logger.error(f"[Resume Test] ERROR IN TEST VALIDATION")
+        logger.error(f"[Resume Test] Error type: {type(e).__name__}")
+        logger.error(f"[Resume Test] Error message: {str(e)}")
+        import traceback
+        logger.error(f"[Resume Test] Traceback:")
+        for line in traceback.format_exc().split('\n'):
+            logger.error(f"[Resume Test]   {line}")
+        logger.error("=" * 60)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.post("/transcribe", response_model=TranscriptionResult)
 async def transcribe_audio(
     audio_file: UploadFile = File(...)
