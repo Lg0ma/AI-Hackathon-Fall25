@@ -1,0 +1,81 @@
+{
+  "interview_responses": {
+    "contact_information": {
+      "Q1_full_name": "Miguel Rodriguez",
+      "Q2_job_title": "Forklift Operator and Warehouse Supervisor",
+      "Q3_phone_number": "915-234-5678",
+      "Q4_email": "No",
+      "Q5_location": "El Paso, Texas"
+    },
+    "work_experience_job1": {
+      "Q6_company": "Southwest Logistics and Distribution",
+      "Q7_location": "El Paso, TX",
+      "Q8_title": "Warehouse Supervisor",
+      "Q9_start_date": "January 2021",
+      "Q10_end_date": "Present",
+      "Q11_accomplishment_1": "Supervise a team of 8 warehouse workers and forklift operators, reducing workplace accidents by 75% over 3 years through strict safety protocols",
+      "Q12_accomplishment_2": "Operate sit-down and stand-up forklifts to move over 400 pallets daily with a perfect safety record and zero accidents in over 4 years",
+      "Q13_accomplishment_3": "Improved inventory accuracy from 92% to 99.5% by implementing a new barcode scanning system and training all staff on proper procedures",
+      "Q14_accomplishment_4": "Trained 12 new employees on warehouse operations, equipment safety, and OSHA compliance standards"
+    },
+    "work_experience_job2": {
+      "Q15_company": "ABC Warehouse Company",
+      "Q16_location": "El Paso, TX",
+      "Q17_title": "Forklift Operator",
+      "Q18_start_date": "March 2018",
+      "Q19_end_date": "December 2020",
+      "Q20_accomplishment_1": "Operated forklifts and pallet jacks to load and unload 250+ delivery trucks per month, maintaining 98% on-time completion rate",
+      "Q21_accomplishment_2": "Received Employee of the Month three times for perfect attendance and exceptional work quality",
+      "Q22_accomplishment_3": "Assisted in training 6 new forklift operators on safety procedures and proper equipment operation"
+    },
+    "work_experience_job3": {
+      "Q23_company": "Home Depot",
+      "Q24_location": "El Paso, TX",
+      "Q25_title": "Warehouse Associate",
+      "Q26_start_date": "June 2016",
+      "Q27_end_date": "February 2018",
+      "Q28_accomplishment_1": "Loaded and unloaded freight, stocked shelves, and operated power equipment including pallet jacks and hand trucks, handling over 100 customer orders daily",
+      "Q29_accomplishment_2": "Maintained a clean and organized warehouse space and followed all safety protocols, resulting in zero safety incidents during employment"
+    },
+    "skills": {
+      "Q30_technical_skills": "Sit-down forklifts, Stand-up forklifts, Reach trucks, Pallet jacks, Hand trucks, RF scanners, Power tools (drills, saws), Warehouse management software",
+      "Q31_certifications_licenses": "Forklift certification (valid through June 2026), OSHA 10-hour safety card, First Aid and CPR certification",
+      "Q32_core_competencies": "Safety-conscious, Team leadership, Attention to detail, Reliable and punctual, Problem-solving, Physical stamina (lift 75+ lbs)"
+    },
+    "education": {
+      "Q33_has_education": "Yes",
+      "Q34_institution": "Bowie High School",
+      "Q35_location": "El Paso, Texas",
+      "Q36_credential": "High School Diploma",
+      "Q37_date": "May 2016",
+      "Q38_additional_education": "No"
+    },
+    "certifications_detailed": {
+      "certification_1": {
+        "Q39_name": "Forklift Certification",
+        "Q40_organization": "SafetyFirst Training Center",
+        "Q41_date": "Valid through June 2026",
+        "Q42_details": "Certified for both sit-down and stand-up forklifts, all classes"
+      },
+      "certification_2": {
+        "Q43_name": "OSHA 10-Hour Safety",
+        "Q44_organization": "OSHA, through Southwest Logistics",
+        "Q45_date": "Completed March 2021",
+        "Q46_details": "No"
+      },
+      "certification_3": {
+        "Q47_name": "First Aid and CPR",
+        "Q48_organization": "American Red Cross",
+        "Q49_date": "Valid through August 2026",
+        "Q50_details": "Includes AED training"
+      },
+      "certification_4": {
+        "Q51_name": "No",
+        "Q52_organization": "",
+        "Q53_date": "",
+        "Q54_details": ""
+      },
+      "Q55_additional_certifications": "No"
+    }
+  }
+}
