@@ -545,3 +545,6 @@ async def cleanup_transcription(text: str):
             status_code=500,
             detail=f"Error cleaning transcription: {str(e)}"
         )
+
+#  ==========================================
+# TODO: not know if it works yet, TEST phase

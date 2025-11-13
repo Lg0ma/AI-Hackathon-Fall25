@@ -460,7 +460,7 @@ function InterviewSession() {
     if (sessionId) {
       await completeInterview();
     } else {
-      navigate('/');
+      navigate('/home');
     }
   };
 
@@ -550,7 +550,7 @@ function InterviewSession() {
             </>
           )}
           <div className="text-center">
-            <button onClick={() => navigate('/')} className="py-3 px-8 bg-blue-600 text-white font-semibold rounded-lg shadow-md">
+            <button onClick={() => navigate('/home')} className="py-3 px-8 bg-blue-600 text-white font-semibold rounded-lg shadow-md">
               Return Home
             </button>
           </div>

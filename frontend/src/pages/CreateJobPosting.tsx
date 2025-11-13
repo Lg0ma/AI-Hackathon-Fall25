@@ -215,3 +215,6 @@ const CreateJobPosting = () => {
     };
 
 export default CreateJobPosting;
+
+// Failed to post job: {'message': "Could not find the table 'public.job_listing' in the schema cache", 'code': 'PGRST205', 
+// 'hint': "Perhaps you meant the table 'public.job_listings'", 'details': None}

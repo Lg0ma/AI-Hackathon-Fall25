@@ -28,6 +28,7 @@ from ai_routes import router as ai_router
 from skill_interview import OllamaClient, SkillAnalyzer
 from simple_interview_endpoint import router as simple_interview_router
 from live_interview_endpoint import router as live_interview_router
+from interview_room import router as interview_room_router, set_models as set_interview_room_models
 
 # Configure logging
 logging.basicConfig(
@@ -142,8 +143,6 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         },
     )
 
-app.include_router(inbox_router.router)
-
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
@@ -161,13 +160,16 @@ app.add_middleware(
 )
 
 # Include routers
+app.include_router(inbox_router.router)
 app.include_router(jobs_router, prefix="/api", tags=["jobs"])
 app.include_router(ai_router)
 app.include_router(simple_interview_router)
 app.include_router(live_interview_router)
+app.include_router(interview_room_router)
 print("[OK] AI routes registered at /ai")
 print("[OK] Simple interview routes registered at /simple-interview")
 print("[OK] Live interview routes registered at /live-interview")
+print("[OK] Interview room routes registered at /live-interview")
 
 # --- AI Model Loading ---
 logger.info("="*60)
@@ -187,6 +189,13 @@ if ollama_client_global.check_connection():
     logger.info("✅ Ollama Mistral model ready")
 else:
     logger.warning("⚠️ Ollama not accessible - AI features may not work")
+
+# Configuring Module for the interview module
+logger.info("Configuring Interview Room module...")
+set_interview_room_models(model, ollama_client_global)
+logger.info("✅ Interview Room configured")
+
+logger.info("="*60)
 
 logger.info("="*60)
 
@@ -816,3 +825,5 @@ async def get_interview_session_info(session_id: str):
         },
         "completed": session.completed
     }
+
+
