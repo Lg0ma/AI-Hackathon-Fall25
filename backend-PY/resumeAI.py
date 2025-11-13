@@ -1,12 +1,51 @@
 #!/usr/bin/env python3
 """
-Resume AI - Ollama Integration Script
-This script connects to a local Ollama instance and uses the qwen2.5-coder:7b model
-to analyze resume-related files and provide insights.
+Resume AI - Blue-Collar Resume Generator
+
+This script generates professional LaTeX resumes from interview response data
+and compiles them to PDF.
+
+It uses a hybrid approach:
+- Python handles precise template structure preservation
+- AI (Ollama + qwen2.5-coder:7b) enhances accomplishment descriptions
+
+Key Features:
+- Accepts JSON data directly (no file path dependencies)
+- Programmatically fills LaTeX template preserving all commands
+- AI enhancement of job accomplishments (optional)
+- Automatic education section removal if no data provided
+- Automatic PDF compilation with pdflatex
+- Optional .tex file cleanup (keep only PDF)
+- Proper LaTeX character escaping
+
+Usage Example:
+    import json
+    from resumeAI import ResumeAI
+
+    # Initialize
+    ai = ResumeAI(model_name="qwen2.5-coder:7b")
+
+    # Load your JSON data
+    with open('interview_responses.json', 'r') as f:
+        json_data = json.load(f)
+
+    # Generate resume PDF
+    result = ai.generate_resume(
+        json_data=json_data,
+        output_filename="candidate_resume",
+        enhance=True,       # Use AI to enhance accomplishments
+        compile_pdf=True,   # Compile to PDF
+        keep_tex=False      # Don't keep .tex file (only PDF)
+    )
+
+    # Result contains paths to generated files
+    print(f"PDF: {result['pdf']}")
 """
 
 import os
 import sys
+import subprocess
+import shutil
 
 try:
     import ollama
@@ -170,14 +209,21 @@ class ResumeAI:
             })
 
         # Process education
-        if 'education' in data and data['education'].get('Q33_has_education', '').lower() != 'no':
+        if 'education' in data:
             edu = data['education']
-            normalized['education'].append({
-                "institution": edu.get('Q34_institution', ''),
-                "location": edu.get('Q35_location', ''),
-                "credential": edu.get('Q36_credential', ''),
-                "date": edu.get('Q37_date', '')
-            })
+            # Check if education data exists (either has Q33_has_education as "Yes" or has institution data)
+            has_education = (
+                edu.get('Q33_has_education', '').lower() == 'yes' or
+                edu.get('Q34_institution', '') != ''
+            )
+
+            if has_education and edu.get('Q34_institution'):
+                normalized['education'].append({
+                    "institution": edu.get('Q34_institution', ''),
+                    "location": edu.get('Q35_location', ''),
+                    "credential": edu.get('Q36_credential', ''),
+                    "date": edu.get('Q37_date', '')
+                })
 
         # Process certifications
         if 'certifications_detailed' in data:
@@ -296,30 +342,25 @@ Enhanced accomplishments:"""
         import re
         filled = template_content
 
-        # 1. Contact info - escape special LaTeX characters
+        # 1. Contact Information
         filled = filled.replace('[Your Full Name]', self.escape_latex(resume_data['contact_info']['full_name']))
         filled = filled.replace('[Your Job Title/Trade]', self.escape_latex(resume_data['contact_info']['job_title']))
         filled = filled.replace('[Your Phone Number]', self.escape_latex(resume_data['contact_info']['phone_number']))
 
-        # Handle email
+        # Handle email (remove if not provided)
         if resume_data['contact_info']['email'].lower() == 'no':
             filled = re.sub(r'\\href\{mailto:your\.email@example\.com\}\{your\.email@example\.com\}\s*\$\|\$\s*\n?', '', filled)
         else:
             filled = filled.replace('your.email@example.com', self.escape_latex(resume_data['contact_info']['email']))
 
-        # Replace first [City, State] in contact section
         filled = filled.replace('[City, State]', self.escape_latex(resume_data['contact_info']['location']), 1)
 
-        # 2. Work Experience - handle multiple jobs
-        work_exp_section = re.search(r'%-----------WORK EXPERIENCE-----------(.*?)%-----------SKILLS-----------', filled, re.DOTALL)
-
-        if work_exp_section and resume_data['work_experience']:
-            # Build new work experience section
+        # 2. Work Experience
+        if resume_data['work_experience']:
             new_work_exp = "%-----------WORK EXPERIENCE-----------\n"
             new_work_exp += "\\section{Work Experience}\n\\resumeSubHeadingListStart\n\n"
 
             for job in resume_data['work_experience']:
-                # Enhance accomplishments if requested
                 accomplishments = job['accomplishments']
                 if enhance:
                     print(f"  Enhancing accomplishments for {job['company']}...")
@@ -331,62 +372,64 @@ Enhanced accomplishments:"""
                 new_work_exp += f"    \\resumeItemListStart\n"
 
                 for acc in accomplishments:
-                    # Escape special LaTeX characters in accomplishment text
                     if not acc or not acc.strip():
-                        continue  # Skip empty accomplishments
+                        continue
                     escaped_acc = self.escape_latex(acc)
-                    # Validate the escaped text doesn't have unmatched braces
-                    if escaped_acc.count('{') != escaped_acc.count('}'):
-                        print(f"    Warning: Unmatched braces in accomplishment, using original: {acc[:50]}...")
-                        escaped_acc = self.escape_latex(acc)
                     new_work_exp += f"      \\resumeItem{{{escaped_acc}}}\n"
 
                 new_work_exp += f"    \\resumeItemListEnd\n\n"
 
             new_work_exp += "\\resumeSubHeadingListEnd\n\\vspace{-15pt}\n\n%-----------SKILLS-----------"
 
-            # Replace the work experience section using lambda to avoid backslash interpretation
             filled = re.sub(
                 r'%-----------WORK EXPERIENCE-----------(.*?)%-----------SKILLS-----------',
-                lambda m: new_work_exp,
+                lambda _: new_work_exp,
                 filled,
                 flags=re.DOTALL
             )
 
-        # 3. Skills - escape special LaTeX characters
+        # 3. Skills - rebuild the entire section with correct structure
         skills_list = ', '.join([self.escape_latex(s) for s in resume_data['skills']['technical_skills']])
         certs_list = ', '.join([self.escape_latex(c) for c in resume_data['skills']['certifications_licenses']])
         comp_list = ', '.join([self.escape_latex(c) for c in resume_data['skills']['core_competencies']])
 
-        # Replace skills placeholders using lambda to avoid backslash interpretation
+        # Build the skills section with correct LaTeX structure
+        new_skills_section = "%-----------SKILLS-----------\n"
+        new_skills_section += "\\section{Skills}\n"
+        new_skills_section += "\\resumeItemListStart\n"
+        new_skills_section += f"  \\resumeItem{{\\textbf{{Technical Skills:}} {skills_list}}}\n"
+        new_skills_section += f"  \\resumeItem{{\\textbf{{Certifications \\& Licenses:}} {certs_list}}}\n"
+        new_skills_section += f"  \\resumeItem{{\\textbf{{Core Competencies:}} {comp_list}}}\n"
+        new_skills_section += "\\resumeItemListEnd\n"
+        new_skills_section += "\\vspace{-15pt}\n\n"
+        new_skills_section += "%-----------EDUCATION-----------"
+
+        # Replace the entire skills section
         filled = re.sub(
-            r'\[List relevant tools.*?\]',
-            lambda m: skills_list,
-            filled
-        )
-        filled = re.sub(
-            r'\[List any valid licenses.*?\]',
-            lambda m: certs_list,
-            filled
-        )
-        filled = re.sub(
-            r'\[List soft skills.*?\]',
-            lambda m: comp_list,
-            filled
+            r'%-----------SKILLS-----------(.*?)%-----------EDUCATION-----------',
+            lambda _: new_skills_section,
+            filled,
+            flags=re.DOTALL
         )
 
-        # 4. Education - escape special LaTeX characters
+        # 4. Education (remove section if no education data)
         if resume_data['education']:
             edu = resume_data['education'][0]
-            filled = re.sub(r'\[School/Institution Name\]', lambda m: self.escape_latex(edu['institution']), filled, count=1)
-            filled = re.sub(r'\[Graduation Date or "Present"\]', lambda m: self.escape_latex(edu['date']), filled, count=1)
-            filled = re.sub(r'\[Degree/Diploma/Certificate\]', lambda m: self.escape_latex(edu['credential']), filled, count=1)
-            # Handle [City, State] in education (the remaining ones)
+            filled = re.sub(r'\[School/Institution Name\]', lambda _: self.escape_latex(edu['institution']), filled, count=1)
+            filled = re.sub(r'\[Graduation Date or "Present"\]', lambda _: self.escape_latex(edu['date']), filled, count=1)
+            filled = re.sub(r'\[Degree/Diploma/Certificate\]', lambda _: self.escape_latex(edu['credential']), filled, count=1)
             filled = filled.replace('[City, State]', self.escape_latex(edu['location']))
+        else:
+            # Remove entire education section if no education data
+            filled = re.sub(
+                r'%-----------EDUCATION-----------(.*?)%-----------TRAINING & CERTIFICATIONS-----------',
+                '%-----------TRAINING & CERTIFICATIONS-----------',
+                filled,
+                flags=re.DOTALL
+            )
 
         # 5. Certifications
-        cert_section = re.search(r'%-----------TRAINING & CERTIFICATIONS-----------(.*?)\\end\{document\}', filled, re.DOTALL)
-        if cert_section and resume_data['certifications_detailed']:
+        if resume_data['certifications_detailed']:
             new_cert_section = "%-----------TRAINING & CERTIFICATIONS-----------\n"
             new_cert_section += "\\section{Training \\& Certifications}\n\\resumeSubHeadingListStart\n"
 
@@ -396,96 +439,183 @@ Enhanced accomplishments:"""
 
             new_cert_section += "\\resumeSubHeadingListEnd\n\\vspace{-16pt}\n\n\\end{document}"
 
-            # Replace using lambda to avoid backslash interpretation
             filled = re.sub(
                 r'%-----------TRAINING & CERTIFICATIONS-----------(.*?)\\end\{document\}',
-                lambda m: new_cert_section,
+                lambda _: new_cert_section,
                 filled,
                 flags=re.DOTALL
             )
 
-        # Debug: Save intermediate version to help diagnose issues
-        debug_file = os.path.join(self.base_path, "debug_filled.tex")
-        try:
-            with open(debug_file, 'w', encoding='utf-8') as f:
-                f.write(filled)
-            print(f"\n  Debug: Saved filled template to {debug_file} for inspection")
-        except Exception as e:
-            print(f"  Debug: Could not save debug file: {e}")
-
         return filled
 
-    def fill_template_with_json(self, json_file):
-        """Fill the LaTeX template with data from a JSON file."""
-        print("\n" + "="*70)
-        print("FILLING RESUME TEMPLATE WITH JSON DATA")
-        print("="*70 + "\n")
+    def compile_latex_to_pdf(self, tex_file_path):
+        """
+        Compile a LaTeX file to PDF using pdflatex.
 
-        # Read the JSON file
-        json_path = os.path.join(self.base_path, json_file)
+        Args:
+            tex_file_path (str): Path to the .tex file
+
+        Returns:
+            str: Path to the generated PDF file, or None if compilation failed
+        """
         try:
-            import json
-            with open(json_path, 'r', encoding='utf-8') as f:
-                raw_data = json.load(f)
-            print(f"✓ Successfully loaded JSON data from {json_file}")
+            # Get the directory and filename
+            tex_dir = os.path.dirname(tex_file_path)
+            tex_filename = os.path.basename(tex_file_path)
+            pdf_filename = tex_filename.replace('.tex', '.pdf')
+            pdf_path = os.path.join(tex_dir, pdf_filename)
 
-            # Normalize the data format
-            resume_data = self.normalize_interview_data(raw_data)
-            print(f"✓ Data normalized and ready for processing")
-            print(f"Data preview: {json.dumps(resume_data, indent=2)[:500]}...\n")
-        except FileNotFoundError:
-            print(f"✗ Error: JSON file '{json_file}' not found at {json_path}")
-            return False
-        except json.JSONDecodeError as e:
-            print(f"✗ Error: Invalid JSON format in {json_file}: {e}")
-            return False
+            print(f"\nCompiling LaTeX to PDF...")
+
+            # Check if pdflatex is available
+            if not shutil.which('pdflatex'):
+                print("  Warning: pdflatex not found. Please install a LaTeX distribution:")
+                print("    - Windows: MiKTeX or TeX Live")
+                print("    - macOS: MacTeX")
+                print("    - Linux: texlive-full")
+                return None
+
+            # Run pdflatex twice (for proper formatting and references)
+            for run_num in range(2):
+                if run_num == 0:
+                    print(f"  First pass...")
+                else:
+                    print(f"  Second pass...")
+
+                result = subprocess.run(
+                    ['pdflatex', '-interaction=nonstopmode', '-halt-on-error', '-output-directory', tex_dir, tex_file_path],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    cwd=tex_dir,
+                    timeout=60  # Increased to 60 seconds
+                )
+
+                if result.returncode != 0:
+                    print(f"  Error: pdflatex compilation failed")
+                    print(f"  Return code: {result.returncode}")
+                    # Print last few lines of output for debugging
+                    output = result.stdout.decode('utf-8', errors='ignore')
+                    lines = output.split('\n')
+                    print("  Last 10 lines of output:")
+                    for line in lines[-10:]:
+                        if line.strip():
+                            print(f"    {line}")
+                    return None
+
+            # Clean up auxiliary files
+            aux_extensions = ['.aux', '.log', '.out']
+            base_name = tex_filename.replace('.tex', '')
+            for ext in aux_extensions:
+                aux_file = os.path.join(tex_dir, base_name + ext)
+                if os.path.exists(aux_file):
+                    try:
+                        os.remove(aux_file)
+                    except:
+                        pass  # Ignore cleanup errors
+
+            if os.path.exists(pdf_path):
+                print(f"  ✓ PDF compiled successfully: {pdf_filename}")
+                return pdf_path
+            else:
+                print(f"  Error: PDF file was not created")
+                return None
+
+        except subprocess.TimeoutExpired:
+            print("  Error: LaTeX compilation timed out after 60 seconds")
+            print("  This usually means there's an error in the LaTeX code.")
+            print("  Check the .tex file for issues like unescaped special characters.")
+            return None
         except Exception as e:
-            print(f"✗ Error reading JSON file: {e}")
+            print(f"  Error during PDF compilation: {e}")
             import traceback
             traceback.print_exc()
-            return False
+            return None
 
-        # Read the LaTeX template
-        template_content = self.read_file("blue_collar_resume_template.tex")
-        if not template_content:
-            print("✗ Error: Could not read LaTeX template")
-            return False
+    def generate_resume(self, json_data, output_filename="resume", enhance=True, compile_pdf=True, keep_tex=False):
+        """
+        Generate a LaTeX resume from JSON data.
 
-        # Fill template programmatically (AI only enhances accomplishments)
-        print(f"\nFilling template with {resume_data['contact_info']['full_name']}'s data...")
-        print("Using programmatic filling to preserve template structure")
-        print(f"AI will enhance accomplishments for professional impact...\n")
+        Args:
+            json_data (dict): Resume data in JSON format (either raw interview format or normalized)
+            output_filename (str): Base name for output file (without extension)
+            enhance (bool): Whether to use AI to enhance accomplishments
+            compile_pdf (bool): Whether to compile LaTeX to PDF (default: True)
+            keep_tex (bool): Whether to keep the .tex file after PDF compilation (default: False)
 
+        Returns:
+            dict: Dictionary with 'pdf' and/or 'tex' paths, or None if failed
+                  Example: {'pdf': 'path/to/resume.pdf', 'tex': 'path/to/resume.tex'}
+        """
         try:
-            filled_content = self.fill_template_programmatically(resume_data, template_content, enhance=True)
+            # Normalize the data format
+            resume_data = self.normalize_interview_data(json_data)
 
-            # Save the filled template
-            output_file = json_file.replace('.json', '_resume.tex')
-            output_path = os.path.join(self.base_path, output_file)
+            # Debug: Show what education data was found
+            if resume_data['education']:
+                print(f"  Education: {resume_data['education'][0]['institution']}")
+            else:
+                print(f"  Education: None (section will be removed)")
 
-            with open(output_path, 'w', encoding='utf-8') as f:
+            # Read the LaTeX template
+            template_content = self.read_file("blue_collar_resume_template.tex")
+            if not template_content:
+                raise ValueError("Could not read LaTeX template")
+
+            # Fill template programmatically (AI only enhances accomplishments if requested)
+            filled_content = self.fill_template_programmatically(resume_data, template_content, enhance=enhance)
+
+            # Prepare output filename
+            if output_filename.endswith('.tex'):
+                output_filename = output_filename[:-4]
+
+            tex_filename = output_filename + '.tex'
+            tex_path = os.path.join(self.base_path, tex_filename)
+
+            # Save the .tex file
+            with open(tex_path, 'w', encoding='utf-8') as f:
                 f.write(filled_content)
 
-            print(f"\n✓ Filled resume saved to: {output_file}")
-            print("✓ Template structure preserved")
-            print("✓ All LaTeX commands intact")
-            print("="*70)
+            result = {}
 
-            return True
+            # Compile to PDF if requested
+            if compile_pdf:
+                pdf_path = self.compile_latex_to_pdf(tex_path)
+                if pdf_path:
+                    result['pdf'] = pdf_path
+
+                    # Delete .tex file if requested
+                    if not keep_tex:
+                        try:
+                            os.remove(tex_path)
+                            print(f"  ✓ Temporary .tex file removed")
+                        except Exception as e:
+                            print(f"  Warning: Could not remove .tex file: {e}")
+                    else:
+                        result['tex'] = tex_path
+                else:
+                    # If PDF compilation failed, keep the .tex file
+                    result['tex'] = tex_path
+                    print(f"  ✓ LaTeX file saved: {tex_filename}")
+            else:
+                result['tex'] = tex_path
+
+            return result if result else None
 
         except Exception as e:
-            print(f"✗ Error during template filling: {e}")
+            print(f"Error generating resume: {e}")
             import traceback
             traceback.print_exc()
-            return False
+            return None
 
 
 
 def main():
     """Main function to run the Resume AI Generator."""
+    import json
+
     print("""
     ╔══════════════════════════════════════════════════════════════════╗
-    ║              RESUME AI GENERATOR - Blue Collar Edition           ║
+    ║                          RESUME AI GENERATOR                     ║
     ║              Powered by Ollama + qwen2.5-coder:7b                ║
     ╚══════════════════════════════════════════════════════════════════╝
     """)
@@ -512,7 +642,43 @@ def main():
     if not json_file:
         json_file = "interview_responses.json"
 
-    ai.fill_template_with_json(json_file)
+    # Load JSON data from file
+    json_path = os.path.join(ai.base_path, json_file)
+    try:
+        with open(json_path, 'r', encoding='utf-8') as f:
+            json_data = json.load(f)
+        print(f"\n✓ Successfully loaded JSON data from {json_file}")
+    except FileNotFoundError:
+        print(f"\n✗ Error: JSON file '{json_file}' not found")
+        return
+    except json.JSONDecodeError as e:
+        print(f"\n✗ Error: Invalid JSON format: {e}")
+        return
+
+    # Generate the resume
+    print("\nGenerating resume...")
+    output_file = json_file.replace('.json', '_resume')
+    result = ai.generate_resume(
+        json_data=json_data,
+        output_filename=output_file,
+        enhance=True,
+        compile_pdf=True,  # Compile to PDF
+        keep_tex=False  # Don't keep .tex file (only PDF)
+    )
+
+    if result:
+        print("\n" + "="*70)
+        print("✓ Resume successfully generated!")
+        print("="*70)
+        if 'pdf' in result:
+            print(f"📄 PDF: {result['pdf']}")
+        if 'tex' in result:
+            print(f"📝 LaTeX: {result['tex']}")
+        print("✓ Template structure preserved")
+        print("✓ All LaTeX commands intact")
+        print("="*70)
+    else:
+        print("\n✗ Resume generation failed")
 
 
 if __name__ == "__main__":

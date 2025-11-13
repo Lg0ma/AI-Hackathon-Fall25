@@ -98,6 +98,8 @@ def convert_to_wav(input_path: str, output_path: str) -> bool:
 from routers.jobs_router import router as jobs_router
 from routers.applications_router import router as applications_router # Import the new router
 from routers import inbox_router
+from resumeAI import ResumeAI
+from resume_router import router as resume_router, set_models as set_resume_models
 
 # --- FastAPI App Initialization ---
 app = FastAPI()
@@ -168,20 +170,24 @@ app.include_router(applications_router, prefix="/api", tags=["applications"]) # 
 app.include_router(ai_router)
 app.include_router(simple_interview_router)
 app.include_router(live_interview_router)
+app.include_router(interview_room_router)
+app.include_router(resume_router)
 print("[OK] AI routes registered at /ai")
 print("[OK] Simple interview routes registered at /simple-interview")
 print("[OK] Live interview routes registered at /live-interview")
+print("[OK] Interview room routes registered at /interview-room")
+print("[OK] Resume routes registered at /resume")
 
 # --- AI Model Loading ---
 logger.info("="*60)
 logger.info("INITIALIZING AI MODELS")
 logger.info("="*60)
 
-# Load faster-whisper-large-v3 model
-logger.info("Loading faster-whisper 'large-v3' model...")
-logger.info("Device: CUDA (GPU) | Compute Type: float16")
-model = WhisperModel("large-v3", device="cpu", compute_type="int8")
-logger.info("✅ faster-whisper-large-v3 model loaded successfully on CUDA")
+# Load faster-whisper base model (faster and lighter)
+logger.info("Loading faster-whisper 'base' model...")
+logger.info("Device: CPU | Compute Type: int8")
+model = WhisperModel("base", device="cpu", compute_type="int8")
+logger.info("✅ faster-whisper-base model loaded successfully")
 
 # Initialize Ollama client for Mistral
 logger.info("Initializing Ollama client with Mistral model...")
@@ -196,7 +202,10 @@ logger.info("Configuring Interview Room module...")
 set_interview_room_models(model, ollama_client_global)
 logger.info("✅ Interview Room configured")
 
-logger.info("="*60)
+# Configuring Resume module
+logger.info("Configuring Resume module...")
+set_resume_models(model, ollama_client_global)
+logger.info("✅ Resume module configured")
 
 logger.info("="*60)
 
