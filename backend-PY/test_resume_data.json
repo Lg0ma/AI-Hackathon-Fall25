@@ -1,0 +1,52 @@
+{
+  "interview_responses": {
+    "contact_information": {
+      "Q1_full_name": "Luis Gomez",
+      "Q2_job_title": "Plumber",
+      "Q3_phone_number": "915-227-2188",
+      "Q4_email": "Luis G31209 and percent gmail.com",
+      "Q5_location": "El Paso, Texas."
+    },
+    "work_experience_job1": {
+      "Q6_company": "Julio's construction firm",
+      "Q7_location": "of pastel texas",
+      "Q8_title": "Regional Manager",
+      "Q9_start_date": "January, 2024.",
+      "Q10_end_date": "January 2025.",
+      "Q11_accomplishment_1": "I operated the sawmill chopping wood with the sawmill using axes and other hand tools to prepare wood for customers.",
+      "Q12_accomplishment_2": "I was able to be promoted within the first two months of my work at the company.",
+      "Q13_accomplishment_3": "I was able to boost revenue in the company by about 10% throughout my whole career at  the company.",
+      "Q14_accomplishment_4": "No."
+    },
+    "work_experience_job2": {
+      "Q15_company": "No.",
+      "Q16_location": "No",
+      "Q17_title": "No",
+      "Q18_start_date": "No",
+      "Q19_end_date": "No",
+      "Q20_accomplishment_1": "No",
+      "Q21_accomplishment_2": "No",
+      "Q22_accomplishment_3": "No"
+    },
+    "skills": {
+      "Q30_technical_skills": "I know how to operate forklifts, wire welder, take welder, drill, power saw, the sawmill,  jackhammer and also hammer, wrenches, all the basic handles as well as commercial trucks  as I am CDL certified.",
+      "Q31_certifications_licenses": "I have a CDL class A license.  I have a focus certification and I have an OSHA 30-hour card.",
+      "Q32_core_competencies": "I am a very good problem solver. I also have a very good physical stamina. I am able to work for long hours on my feet.  I am able to re-blue prints. I also know how to manage inventory and deal with customers in a reliable way.  I also have reliable attendance. I have not missed a single day in the last year of my work."
+    },
+    "education": {
+      "Q33_has_education": "Yes",
+      "Q34_institution": "I went to University of Texas at El Paso.",
+      "Q35_location": "El Paso, Texas.",
+      "Q36_credential": "Bachelor's degree in Computer Science.",
+      "Q37_date": "In January 2025."
+    },
+    "certifications_detailed": {
+      "certification_1": {
+        "Q39_name": "CDL Class 1",
+        "Q40_organization": "The Texas Department of Motor Vehicles",
+        "Q41_date": "January, 2024.",
+        "Q42_details": "No"
+      }
+    }
+  }
+}

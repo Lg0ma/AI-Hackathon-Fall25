@@ -46,3 +46,6 @@ logs/
 dist/
 build/
 *.egg-info/
+
+# Auto-generated documentation
+ARCHITECTURE_*.md
