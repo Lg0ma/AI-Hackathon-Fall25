@@ -49,10 +49,10 @@ import shutil
 
 try:
     import ollama
+    OLLAMA_AVAILABLE = True
 except ImportError:
-    print("Error: 'ollama' package not found.")
-    print("Please install it using: pip install ollama")
-    sys.exit(1)
+    OLLAMA_AVAILABLE = False
+    # ollama is only needed for AI enhancement, not for validation/formatting
 
 
 class ResumeAI:
@@ -65,6 +65,12 @@ class ResumeAI:
 
     def test_connection(self):
         """Test connection to Ollama instance."""
+        if not OLLAMA_AVAILABLE:
+            print(" Warning: Ollama package not installed")
+            print("  AI enhancement features will not be available")
+            print("  Validation and formatting will still work")
+            return False
+
         try:
             # Try to list available models
             models_response = ollama.list()
@@ -136,10 +142,11 @@ class ResumeAI:
         if not isinstance(response, str):
             response = str(response)
 
-        response = response.strip().lower()
+        # Strip whitespace AND punctuation for checking
+        response = response.strip().rstrip('.').lower()
 
         # Check for various forms of "no" or empty responses
-        invalid_responses = ['no', 'none', 'n/a', 'na', 'nothing', '', 'nil', 'null']
+        invalid_responses = ['no', 'none', 'n/a', 'na', 'nothing', '', 'nil', 'null', 'n', 'nope']
 
         return response not in invalid_responses and len(response) > 0
 
@@ -169,7 +176,7 @@ class ResumeAI:
                 'Q1_full_name': contact.get('Q1_full_name', ''),
                 'Q2_job_title': self.format_response(contact.get('Q2_job_title', ''), 'job_title'),
                 'Q3_phone_number': contact.get('Q3_phone_number', ''),
-                'Q4_email': contact.get('Q4_email', ''),
+                'Q4_email': self.format_response(contact.get('Q4_email', ''), 'default'),  # Fix email transcription errors
                 'Q5_location': self.format_response(contact.get('Q5_location', ''), 'location')
             }
 
@@ -248,6 +255,16 @@ class ResumeAI:
         job_title_raw = contact_info.get('Q2_job_title', '')
         job_title = self.format_response(job_title_raw, 'job_title') if self.is_valid_response(job_title_raw) else ''
 
+        # Process skills with proper filtering
+        tech_skills_str = self.format_response(data.get('skills', {}).get('Q30_technical_skills', ''), 'skills')
+        tech_skills = [s.strip() for s in tech_skills_str.split(', ') if s.strip() and s.strip().lower() != 'no']
+
+        cert_licenses_str = self.format_response(data.get('skills', {}).get('Q31_certifications_licenses', ''), 'skills')
+        cert_licenses = [s.strip() for s in cert_licenses_str.split(', ') if s.strip() and s.strip().lower() != 'no']
+
+        core_comp_str = self.format_response(data.get('skills', {}).get('Q32_core_competencies', ''), 'skills')
+        core_comp = [s.strip() for s in core_comp_str.split(', ') if s.strip() and s.strip().lower() != 'no']
+
         normalized = {
             "contact_info": {
                 "full_name": contact_info.get('Q1_full_name', ''),
@@ -258,9 +275,9 @@ class ResumeAI:
             },
             "work_experience": [],
             "skills": {
-                "technical_skills": self.format_response(data.get('skills', {}).get('Q30_technical_skills', ''), 'skills').split(', '),
-                "certifications_licenses": self.format_response(data.get('skills', {}).get('Q31_certifications_licenses', ''), 'skills').split(', '),
-                "core_competencies": self.format_response(data.get('skills', {}).get('Q32_core_competencies', ''), 'skills').split(', ')
+                "technical_skills": tech_skills,
+                "certifications_licenses": cert_licenses,
+                "core_competencies": core_comp
             },
             "education": [],
             "certifications_detailed": []
@@ -468,68 +485,24 @@ class ResumeAI:
         response_text = response_text.strip()
 
         # Handle empty or "no" responses
-        if not response_text or response_text.lower() in ['no', 'none', 'n/a', 'na']:
+        if not response_text or response_text.strip().rstrip('.').lower() in ['no', 'none', 'n/a', 'na']:
             return 'No'
+
+        # Fix common transcription errors FIRST (before other processing)
+        response_text = self._fix_common_errors(response_text)
 
         # Skills extraction - ensure comma-separated list only
         if question_type == 'skills':
-            # Remove full sentences, keep only skill terms
-            # Split by common delimiters
-            skills = []
-
-            # Split by periods, newlines, and common sentence indicators
-            parts = response_text.replace('.', ',').replace('\n', ',').replace(';', ',')
-
-            # Extract skills from comma-separated values
-            for part in parts.split(','):
-                part = part.strip()
-                # Skip empty parts, filler words, and full sentences (more than 8 words is likely a sentence)
-                if part and len(part.split()) <= 6 and not part.lower().startswith(('i ', 'the ', 'and ', 'or ')):
-                    skills.append(part)
-
-            # Return comma-separated skills
+            skills = self._extract_skills_from_text(response_text)
             return ', '.join(skills) if skills else 'No'
 
         # Job title extraction - extract only the specialty/title
         elif question_type == 'job_title':
-            # Remove common filler words and sentences
-            text = response_text
-
-            # If it's a full sentence, try to extract just the job title
-            if len(text.split()) > 5:
-                # Look for patterns like "I am a X" or "I work as a X"
-                import re
-                patterns = [
-                    r'(?:I am|I\'m|I work as|My title is|I\'m a|I am a)\s+(?:a\s+)?(.+?)(?:\.|$|at|with|for)',
-                    r'^(.+?)(?:\s+at\s+|\s+with\s+|\s+for\s+)',  # Extract before "at/with/for"
-                ]
-
-                for pattern in patterns:
-                    match = re.search(pattern, text, re.IGNORECASE)
-                    if match:
-                        title = match.group(1).strip()
-                        # Clean up common articles
-                        title = re.sub(r'^(a|an|the)\s+', '', title, flags=re.IGNORECASE)
-                        if title and len(title.split()) <= 4:  # Reasonable title length
-                            return title
-
-            # If no pattern matched, return as-is if it's short enough
-            if len(text.split()) <= 4:
-                return text
-
-            # Otherwise, just return the first few meaningful words
-            words = text.split()[:3]
-            return ' '.join(words)
+            return self._extract_job_title(response_text)
 
         # Location formatting
         elif question_type == 'location':
-            # Ensure format is "City, State"
-            import re
-            # Look for city, state pattern
-            match = re.search(r'([A-Za-z\s]+),\s*([A-Z]{2}|[A-Za-z\s]+)', response_text)
-            if match:
-                return f"{match.group(1).strip()}, {match.group(2).strip()}"
-            return response_text
+            return self._format_location(response_text)
 
         # Default: return cleaned text (remove extra whitespace, trailing periods)
         else:
@@ -540,8 +513,124 @@ class ResumeAI:
                 text = text[:-1]
             return text
 
+    def _fix_common_errors(self, text):
+        """Fix common transcription and speech-to-text errors"""
+        import re
+
+        # Fix email addresses
+        # "and percent" or "at percent" → @
+        text = re.sub(r'\s+and\s+percent\s+', '@', text, flags=re.IGNORECASE)
+        text = re.sub(r'\s+at\s+percent\s+', '@', text, flags=re.IGNORECASE)
+        text = re.sub(r'\s+percent\s+', '@', text, flags=re.IGNORECASE)
+
+        # "dot com" → .com
+        text = re.sub(r'\s+dot\s+com', '.com', text, flags=re.IGNORECASE)
+        text = re.sub(r'\s+dot\s+org', '.org', text, flags=re.IGNORECASE)
+
+        # Common location mishearings
+        text = re.sub(r'\bof\s+pastel\s+texas\b', 'El Paso, Texas', text, flags=re.IGNORECASE)
+        text = re.sub(r'\bel\s+pastel\b', 'El Paso', text, flags=re.IGNORECASE)
+        text = re.sub(r'\bpastel\s+texas\b', 'El Paso, Texas', text, flags=re.IGNORECASE)
+
+        return text
+
+    def _extract_skills_from_text(self, text):
+        """Extract individual skills from text, handling sentences"""
+        import re
+
+        skills = []
+
+        # Remove common filler phrases
+        text = re.sub(r'\b(I know how to|I can|I have experience with|I am able to|I have)\s+', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'\bas well as\b', ',', text, flags=re.IGNORECASE)
+
+        # Split by periods, newlines, "and", and commas
+        text = text.replace('.', ',').replace('\n', ',').replace(';', ',').replace(' and ', ', ')
+
+        # Extract skills from parts
+        for part in text.split(','):
+            part = part.strip()
+
+            if not part:
+                continue
+
+            # Remove leading articles and common words
+            part = re.sub(r'^\b(the|a|an|also)\s+', '', part, flags=re.IGNORECASE)
+            part = part.strip()
+
+            # Skip if too long (likely still a sentence) or empty
+            if not part or len(part.split()) > 6:
+                continue
+
+            # Skip common filler phrases
+            if part.lower() in ['as', 'with', 'using', 'including', 'such as']:
+                continue
+
+            skills.append(part)
+
+        return skills
+
+    def _extract_job_title(self, text):
+        """Extract job title from text"""
+        import re
+
+        # Remove common filler words and sentences
+        # Look for patterns like "I am a X" or "I work as a X"
+        if len(text.split()) > 5:
+            patterns = [
+                r'(?:I am|I\'m|I work as|My title is|I\'m a|I am a)\s+(?:a\s+)?(.+?)(?:\.|$|at|with|for)',
+                r'^(.+?)(?:\s+at\s+|\s+with\s+|\s+for\s+)',  # Extract before "at/with/for"
+            ]
+
+            for pattern in patterns:
+                match = re.search(pattern, text, re.IGNORECASE)
+                if match:
+                    title = match.group(1).strip()
+                    # Clean up common articles
+                    title = re.sub(r'^(a|an|the)\s+', '', title, flags=re.IGNORECASE)
+                    if title and len(title.split()) <= 4:  # Reasonable title length
+                        return title
+
+        # If no pattern matched, return as-is if it's short enough
+        if len(text.split()) <= 4:
+            return text
+
+        # Otherwise, just return the first few meaningful words
+        words = text.split()[:3]
+        return ' '.join(words)
+
+    def _format_location(self, text):
+        """Format location as 'City, State'"""
+        import re
+
+        # Already properly formatted?
+        match = re.search(r'([A-Z][A-Za-z\s]+),\s*([A-Z]{2}|[A-Z][a-z]+)', text)
+        if match:
+            city = match.group(1).strip()
+            state = match.group(2).strip()
+            # Capitalize properly
+            city = ' '.join(word.capitalize() for word in city.split())
+            if len(state) > 2:
+                state = state.capitalize()
+            return f"{city}, {state}"
+
+        # Try to extract something usable
+        # Look for "City State" pattern without comma
+        match = re.search(r'([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+([A-Z][a-z]+)', text)
+        if match:
+            city = match.group(1).strip()
+            state = match.group(2).strip()
+            return f"{city}, {state}"
+
+        # If nothing works, return cleaned text
+        return text.strip().rstrip('.')
+
     def enhance_accomplishments_with_ai(self, accomplishments):
         """Use AI to enhance accomplishment descriptions."""
+        if not OLLAMA_AVAILABLE:
+            print("  Warning: Ollama not available, using original text")
+            return accomplishments
+
         prompt = f"""Enhance these job accomplishments to be more professional and impactful. Keep them truthful.
 
 Original accomplishments:
