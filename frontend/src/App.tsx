@@ -13,6 +13,9 @@ import EmployerDashboard from './pages/EmployerDashboard';
 import CreateJobPosting from './pages/CreateJobPosting';
 import ManageJobs from './pages/ManageJobs';
 import AIInterviewRoomPage from './pages/AIInterviewRoomPage';
+import ResumePage from './pages/ResumePage';
+import WelcomePage from './pages/WelcomePage'; // Import WelcomePage
+import ApplicationsPage from './pages/ApplicationsPage'; // Import ApplicationsPage
 import './App.css';
 import './index.css';
 
@@ -20,7 +23,10 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<LandingPage />} />
+        <Route path="/" element={<LandingPage />} /> {/* Public landing page */}
+        <Route path="/welcome" element={<WelcomePage />} /> {/* Post-login welcome page */}
+        <Route path="/applications" element={<ApplicationsPage />} /> {/* Applications page */}
+        <Route path="/resume" element={<ResumePage />} />
         <Route path="/interview/:roomName" element={<InterviewPage />} />
         <Route path="/interview-session/:jobId" element={<InterviewSession />} />
         <Route path="/live-interview/:jobId" element={<LiveInterview />} />

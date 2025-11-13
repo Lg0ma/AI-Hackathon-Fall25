@@ -51,7 +51,8 @@ const CreateJobPosting = () => {
         } catch (error) {
         console.error("Error posting job:", error);
         alert("⚠️ An error occurred while posting the job.");
-        } finally {
+        }
+        finally {
         setLoading(false);
         }
     };
@@ -191,9 +192,9 @@ const CreateJobPosting = () => {
                 <div className="flex flex-col sm:flex-row gap-4 pt-4">
                 <button
                     type="button"
-                    onClick={() => navigate("/employer/dashboard")}
-                    className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 
-                    rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                    onClick={() => navigate("/employer")}
+                    className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg 
+                    hover:bg-blue-700 transition-colors font-medium"
                 >
                     Cancel
                 </button>

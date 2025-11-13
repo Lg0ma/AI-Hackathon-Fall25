@@ -27,7 +27,7 @@ const LoginAccount: React.FC = () => {
       if (response.ok) {
         // Handle successful login, e.g., store token and redirect
         console.log('Login successful:', data);
-        navigate('/home');
+        navigate('/welcome');
       } else {
         setError(data.error || 'An unknown error occurred.');
       }
@@ -115,7 +115,7 @@ const LoginAccount: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="relative flex justify-center w-full px-4 py-2 text-sm font-medium text-white bg-blue-.600 border border-transparent rounded-md group hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+              className="relative flex justify-center w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md group hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
             >
               {loading ? 'Signing in...' : 'Sign in'}
             </button>

@@ -177,13 +177,13 @@ const ManageJobs = () => {
                   <div className="flex lg:flex-col gap-2">
                     <button
                     //   onClick={() => navigate(`/employer/edit-job/${job.employer_id}`)}
-                      className="flex-1 lg:flex-none px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+                      className="flex-1 lg:flex-none px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
                     >
                       Edit
                     </button>
                     <button
                     //   onClick={() => navigate(`/employer/applicants/${job.employer_id}`)}
-                      className="flex-1 lg:flex-none px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+                      className="flex-1 lg:flex-none px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
                     >
                       View Applicants
                     </button>
