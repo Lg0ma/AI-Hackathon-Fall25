@@ -273,55 +273,92 @@ User's Answer: {request.answer}
 
 Respond with ONLY the formatted location (e.g., "Phoenix, AZ"). No explanations."""
 
+            # Job title questions (Q2, Q8, Q17, Q25)
+            elif question_id in ['Q2', 'Q8', 'Q17', 'Q25']:
+                prompt = f"""Extract ONLY the job title or specialty from the user's answer.
+
+Requirements:
+- Return ONLY the job title/specialty (e.g., "Welder", "Forklift Operator", "Construction Manager")
+- Remove full sentences like "I work as a..." or "My job is..."
+- Remove company names and locations
+- Remove phrases like "at", "with", "for"
+- Keep it short (2-4 words maximum)
+- If user says "No" or unclear, return: No
+
+Question: {request.question}
+User's Answer: {request.answer}
+
+Examples:
+- "I work as a welder at ABC Company" → "Welder"
+- "I'm a forklift operator" → "Forklift Operator"
+- "Construction manager with 10 years experience" → "Construction Manager"
+
+Respond with ONLY the job title. No explanations."""
+
             # Skills question (Q30 - technical skills)
             elif question_id == 'Q30':
                 prompt = f"""Extract individual skills, tools, equipment, and machinery from the user's answer.
 
 Requirements:
-- List skills separated by commas
-- Be specific (e.g., "forklift (sit-down)", "MIG welding", "TIG welding")
-- Remove filler words and sentences
+- Return ONLY a comma-separated list of skills
+- Each skill should be 1-4 words (not full sentences)
+- Be specific (e.g., "forklift operation", "MIG welding", "TIG welding")
+- Remove filler words like "I know", "I can", "I have experience with"
+- Remove full sentences or explanations
 - Keep technical terminology exact
 - If user says "No" or "None", return: No
 
 Question: {request.question}
 User's Answer: {request.answer}
 
-Respond with ONLY a comma-separated list of skills. Example: "forklift operation, MIG welding, TIG welding, power tools, hand tools"
-No explanations or extra text."""
+Examples:
+- "I know how to operate forklifts and I can do MIG welding" → "forklift operation, MIG welding"
+- "I have experience with power tools, hand tools, and electrical work" → "power tools, hand tools, electrical work"
+
+Respond with ONLY a comma-separated list of skills. No explanations or extra text."""
 
             # Certifications question (Q31)
             elif question_id == 'Q31':
                 prompt = f"""Extract certifications and licenses from the user's answer.
 
 Requirements:
-- List certifications separated by commas
+- Return ONLY a comma-separated list of certifications
+- Each certification should be 2-5 words (not full sentences)
 - Include specific details (e.g., "CDL Class A with Hazmat", not just "CDL")
 - Use standard abbreviations (OSHA, CDL, EPA, etc.)
-- Remove filler words
+- Remove filler words like "I have", "I got", "I'm certified in"
+- Remove full sentences or explanations
 - If user says "No" or "None", return: No
 
 Question: {request.question}
 User's Answer: {request.answer}
 
-Respond with ONLY a comma-separated list of certifications. Example: "CDL Class A, OSHA 30-hour, Forklift certified"
-No explanations."""
+Examples:
+- "I have my CDL Class A and OSHA 30-hour certification" → "CDL Class A, OSHA 30-hour"
+- "I'm forklift certified and I have a welding certification" → "Forklift certified, Welding certification"
+
+Respond with ONLY a comma-separated list of certifications. No explanations."""
 
             # Core competencies question (Q32)
             elif question_id == 'Q32':
                 prompt = f"""Extract core competencies and soft skills from the user's answer.
 
 Requirements:
-- List competencies separated by commas
+- Return ONLY a comma-separated list of competencies
+- Each competency should be 2-4 words (not full sentences)
 - Use professional terminology
-- Remove filler words and full sentences
+- Remove filler words like "I am", "I can", "I'm good at"
+- Remove full sentences or explanations
 - If user says "No" or "None", return: No
 
 Question: {request.question}
 User's Answer: {request.answer}
 
-Respond with ONLY a comma-separated list of competencies. Example: "safety compliance, team leadership, problem-solving, attention to detail"
-No explanations."""
+Examples:
+- "I'm good at working with teams and I pay attention to details" → "team collaboration, attention to detail"
+- "I can solve problems and I'm a leader" → "problem-solving, leadership"
+
+Respond with ONLY a comma-separated list of competencies. No explanations."""
 
             # Date questions (Q9, Q10, Q18, Q19, Q37)
             elif question_id in ['Q9', 'Q10', 'Q18', 'Q19', 'Q37']:

@@ -120,6 +120,120 @@ class ResumeAI:
             return None
 
 
+    def is_valid_response(self, response):
+        """
+        Check if a response is valid (not empty, not 'no', etc.)
+
+        Args:
+            response: The response string to check
+
+        Returns:
+            bool: True if response is valid, False otherwise
+        """
+        if not response:
+            return False
+
+        if not isinstance(response, str):
+            response = str(response)
+
+        response = response.strip().lower()
+
+        # Check for various forms of "no" or empty responses
+        invalid_responses = ['no', 'none', 'n/a', 'na', 'nothing', '', 'nil', 'null']
+
+        return response not in invalid_responses and len(response) > 0
+
+    def validate_and_clean_all_responses(self, interview_data):
+        """
+        Validate and clean all responses in interview data before processing.
+        This ensures all responses are properly formatted for resume generation.
+
+        Args:
+            interview_data: Complete interview responses dictionary
+
+        Returns:
+            Cleaned interview_data dictionary
+        """
+        # Check if data has interview_responses wrapper
+        if 'interview_responses' in interview_data:
+            data = interview_data['interview_responses']
+        else:
+            return interview_data
+
+        cleaned = {"interview_responses": {}}
+
+        # Clean contact information
+        if 'contact_information' in data:
+            contact = data['contact_information']
+            cleaned['interview_responses']['contact_information'] = {
+                'Q1_full_name': contact.get('Q1_full_name', ''),
+                'Q2_job_title': self.format_response(contact.get('Q2_job_title', ''), 'job_title'),
+                'Q3_phone_number': contact.get('Q3_phone_number', ''),
+                'Q4_email': contact.get('Q4_email', ''),
+                'Q5_location': self.format_response(contact.get('Q5_location', ''), 'location')
+            }
+
+        # Clean work experience - Job 1
+        if 'work_experience_job1' in data:
+            job1 = data['work_experience_job1']
+            cleaned['interview_responses']['work_experience_job1'] = {
+                'Q6_company': job1.get('Q6_company', ''),
+                'Q7_location': self.format_response(job1.get('Q7_location', ''), 'location'),
+                'Q8_title': self.format_response(job1.get('Q8_title', ''), 'job_title'),
+                'Q9_start_date': job1.get('Q9_start_date', ''),
+                'Q10_end_date': job1.get('Q10_end_date', ''),
+                'Q11_accomplishment_1': job1.get('Q11_accomplishment_1', ''),
+                'Q12_accomplishment_2': job1.get('Q12_accomplishment_2', ''),
+                'Q13_accomplishment_3': job1.get('Q13_accomplishment_3', ''),
+                'Q14_accomplishment_4': job1.get('Q14_accomplishment_4', '')
+            }
+
+        # Clean work experience - Job 2
+        if 'work_experience_job2' in data:
+            job2 = data['work_experience_job2']
+            cleaned['interview_responses']['work_experience_job2'] = {
+                'Q15_company': job2.get('Q15_company', ''),
+                'Q16_location': self.format_response(job2.get('Q16_location', ''), 'location'),
+                'Q17_title': self.format_response(job2.get('Q17_title', ''), 'job_title'),
+                'Q18_start_date': job2.get('Q18_start_date', ''),
+                'Q19_end_date': job2.get('Q19_end_date', ''),
+                'Q20_accomplishment_1': job2.get('Q20_accomplishment_1', ''),
+                'Q21_accomplishment_2': job2.get('Q21_accomplishment_2', ''),
+                'Q22_accomplishment_3': job2.get('Q22_accomplishment_3', '')
+            }
+
+        # Clean work experience - Job 3
+        if 'work_experience_job3' in data:
+            job3 = data['work_experience_job3']
+            cleaned['interview_responses']['work_experience_job3'] = {
+                'Q23_company': job3.get('Q23_company', ''),
+                'Q24_location': self.format_response(job3.get('Q24_location', ''), 'location'),
+                'Q25_title': self.format_response(job3.get('Q25_title', ''), 'job_title'),
+                'Q26_start_date': job3.get('Q26_start_date', ''),
+                'Q27_end_date': job3.get('Q27_end_date', ''),
+                'Q28_accomplishment_1': job3.get('Q28_accomplishment_1', ''),
+                'Q29_accomplishment_2': job3.get('Q29_accomplishment_2', '')
+            }
+
+        # Clean skills
+        if 'skills' in data:
+            skills = data['skills']
+            cleaned['interview_responses']['skills'] = {
+                'Q30_technical_skills': self.format_response(skills.get('Q30_technical_skills', ''), 'skills'),
+                'Q31_certifications_licenses': self.format_response(skills.get('Q31_certifications_licenses', ''), 'skills'),
+                'Q32_core_competencies': self.format_response(skills.get('Q32_core_competencies', ''), 'skills')
+            }
+
+        # Clean education
+        if 'education' in data:
+            cleaned['interview_responses']['education'] = data['education']
+
+        # Clean certifications
+        if 'certifications_detailed' in data:
+            cleaned['interview_responses']['certifications_detailed'] = data['certifications_detailed']
+
+        return cleaned
+
     def normalize_interview_data(self, raw_data):
         """Normalize interview response data to a cleaner format."""
         # Check if data has interview_responses wrapper
@@ -129,84 +243,118 @@ class ResumeAI:
             return raw_data  # Already in correct format
 
         # Extract and normalize the data
+        # Format contact information responses
+        contact_info = data.get('contact_information', {})
+        job_title_raw = contact_info.get('Q2_job_title', '')
+        job_title = self.format_response(job_title_raw, 'job_title') if self.is_valid_response(job_title_raw) else ''
+
         normalized = {
             "contact_info": {
-                "full_name": data['contact_information'].get('Q1_full_name', ''),
-                "job_title": data['contact_information'].get('Q2_job_title', ''),
-                "phone_number": data['contact_information'].get('Q3_phone_number', ''),
-                "email": data['contact_information'].get('Q4_email', ''),
-                "location": data['contact_information'].get('Q5_location', '')
+                "full_name": contact_info.get('Q1_full_name', ''),
+                "job_title": job_title,
+                "phone_number": contact_info.get('Q3_phone_number', ''),
+                "email": contact_info.get('Q4_email', ''),
+                "location": self.format_response(contact_info.get('Q5_location', ''), 'location')
             },
             "work_experience": [],
             "skills": {
-                "technical_skills": data['skills'].get('Q30_technical_skills', '').split(', '),
-                "certifications_licenses": data['skills'].get('Q31_certifications_licenses', '').split(', '),
-                "core_competencies": data['skills'].get('Q32_core_competencies', '').split(', ')
+                "technical_skills": self.format_response(data.get('skills', {}).get('Q30_technical_skills', ''), 'skills').split(', '),
+                "certifications_licenses": self.format_response(data.get('skills', {}).get('Q31_certifications_licenses', ''), 'skills').split(', '),
+                "core_competencies": self.format_response(data.get('skills', {}).get('Q32_core_competencies', ''), 'skills').split(', ')
             },
             "education": [],
             "certifications_detailed": []
         }
 
-        # Process job 1 if exists
-        if 'work_experience_job1' in data and data['work_experience_job1'].get('Q6_company'):
+        # Process job 1 if exists and is valid
+        if 'work_experience_job1' in data:
             job1 = data['work_experience_job1']
-            accomplishments = [job1.get('Q11_accomplishment_1', '')]
-            if job1.get('Q12_accomplishment_2'):
-                accomplishments.append(job1['Q12_accomplishment_2'])
-            if job1.get('Q13_accomplishment_3'):
-                accomplishments.append(job1['Q13_accomplishment_3'])
-            if job1.get('Q14_accomplishment_4'):
-                accomplishments.append(job1['Q14_accomplishment_4'])
+            company = job1.get('Q6_company', '')
 
-            normalized['work_experience'].append({
-                "job_number": 1,
-                "company": job1.get('Q6_company', ''),
-                "location": job1.get('Q7_location', ''),
-                "title": job1.get('Q8_title', ''),
-                "start_date": job1.get('Q9_start_date', ''),
-                "end_date": job1.get('Q10_end_date', ''),
-                "accomplishments": [a for a in accomplishments if a]
-            })
+            # Only add job if company name is valid
+            if self.is_valid_response(company):
+                accomplishments = []
+                # Only add valid accomplishments
+                if self.is_valid_response(job1.get('Q11_accomplishment_1', '')):
+                    accomplishments.append(job1['Q11_accomplishment_1'])
+                if self.is_valid_response(job1.get('Q12_accomplishment_2', '')):
+                    accomplishments.append(job1['Q12_accomplishment_2'])
+                if self.is_valid_response(job1.get('Q13_accomplishment_3', '')):
+                    accomplishments.append(job1['Q13_accomplishment_3'])
+                if self.is_valid_response(job1.get('Q14_accomplishment_4', '')):
+                    accomplishments.append(job1['Q14_accomplishment_4'])
 
-        # Process job 2 if exists
-        if 'work_experience_job2' in data and data['work_experience_job2'].get('Q15_company') and data['work_experience_job2'].get('Q15_company').lower() != 'no':
+                # Format job title
+                title_raw = job1.get('Q8_title', '')
+                title = self.format_response(title_raw, 'job_title') if self.is_valid_response(title_raw) else ''
+
+                normalized['work_experience'].append({
+                    "job_number": 1,
+                    "company": company,
+                    "location": self.format_response(job1.get('Q7_location', ''), 'location'),
+                    "title": title,
+                    "start_date": job1.get('Q9_start_date', ''),
+                    "end_date": job1.get('Q10_end_date', ''),
+                    "accomplishments": accomplishments
+                })
+
+        # Process job 2 if exists and is valid
+        if 'work_experience_job2' in data:
             job2 = data['work_experience_job2']
-            accomplishments = []
-            if job2.get('Q20_accomplishment_1'):
-                accomplishments.append(job2['Q20_accomplishment_1'])
-            if job2.get('Q21_accomplishment_2'):
-                accomplishments.append(job2['Q21_accomplishment_2'])
-            if job2.get('Q22_accomplishment_3'):
-                accomplishments.append(job2['Q22_accomplishment_3'])
+            company = job2.get('Q15_company', '')
 
-            normalized['work_experience'].append({
-                "job_number": 2,
-                "company": job2.get('Q15_company', ''),
-                "location": job2.get('Q16_location', ''),
-                "title": job2.get('Q17_title', ''),
-                "start_date": job2.get('Q18_start_date', ''),
-                "end_date": job2.get('Q19_end_date', ''),
-                "accomplishments": [a for a in accomplishments if a]
-            })
+            # Only add job if company name is valid
+            if self.is_valid_response(company):
+                accomplishments = []
+                # Only add valid accomplishments
+                if self.is_valid_response(job2.get('Q20_accomplishment_1', '')):
+                    accomplishments.append(job2['Q20_accomplishment_1'])
+                if self.is_valid_response(job2.get('Q21_accomplishment_2', '')):
+                    accomplishments.append(job2['Q21_accomplishment_2'])
+                if self.is_valid_response(job2.get('Q22_accomplishment_3', '')):
+                    accomplishments.append(job2['Q22_accomplishment_3'])
 
-        # Process job 3 if exists
-        if 'work_experience_job3' in data and data['work_experience_job3'].get('Q23_company') and data['work_experience_job3'].get('Q23_company').lower() != 'no':
+                # Format job title
+                title_raw = job2.get('Q17_title', '')
+                title = self.format_response(title_raw, 'job_title') if self.is_valid_response(title_raw) else ''
+
+                normalized['work_experience'].append({
+                    "job_number": 2,
+                    "company": company,
+                    "location": self.format_response(job2.get('Q16_location', ''), 'location'),
+                    "title": title,
+                    "start_date": job2.get('Q18_start_date', ''),
+                    "end_date": job2.get('Q19_end_date', ''),
+                    "accomplishments": accomplishments
+                })
+
+        # Process job 3 if exists and is valid
+        if 'work_experience_job3' in data:
             job3 = data['work_experience_job3']
-            accomplishments = []
-            if job3.get('Q28_accomplishment_1'):
-                accomplishments.append(job3['Q28_accomplishment_1'])
-            if job3.get('Q29_accomplishment_2'):
-                accomplishments.append(job3['Q29_accomplishment_2'])
+            company = job3.get('Q23_company', '')
 
-            normalized['work_experience'].append({
-                "job_number": 3,
-                "company": job3.get('Q23_company', ''),
-                "location": job3.get('Q24_location', ''),
-                "title": job3.get('Q25_title', ''),
-                "start_date": job3.get('Q26_start_date', ''),
-                "end_date": job3.get('Q27_end_date', ''),
-                "accomplishments": [a for a in accomplishments if a]
-            })
+            # Only add job if company name is valid
+            if self.is_valid_response(company):
+                accomplishments = []
+                # Only add valid accomplishments
+                if self.is_valid_response(job3.get('Q28_accomplishment_1', '')):
+                    accomplishments.append(job3['Q28_accomplishment_1'])
+                if self.is_valid_response(job3.get('Q29_accomplishment_2', '')):
+                    accomplishments.append(job3['Q29_accomplishment_2'])
+
+                # Format job title
+                title_raw = job3.get('Q25_title', '')
+                title = self.format_response(title_raw, 'job_title') if self.is_valid_response(title_raw) else ''
+
+                normalized['work_experience'].append({
+                    "job_number": 3,
+                    "company": company,
+                    "location": self.format_response(job3.get('Q24_location', ''), 'location'),
+                    "title": title,
+                    "start_date": job3.get('Q26_start_date', ''),
+                    "end_date": job3.get('Q27_end_date', ''),
+                    "accomplishments": accomplishments
+                })
 
         # Process education
         if 'education' in data:
@@ -301,6 +449,96 @@ class ResumeAI:
             text = text.replace(char, replacement)
 
         return text
+
+    def format_response(self, response_text, question_type):
+        """
+        Format and clean response based on question type.
+        Ensures responses are properly formatted for resume use.
+
+        Args:
+            response_text: The raw response text
+            question_type: Type of question (skills, job_title, location, etc.)
+
+        Returns:
+            Formatted response string
+        """
+        if not isinstance(response_text, str):
+            response_text = str(response_text)
+
+        response_text = response_text.strip()
+
+        # Handle empty or "no" responses
+        if not response_text or response_text.lower() in ['no', 'none', 'n/a', 'na']:
+            return 'No'
+
+        # Skills extraction - ensure comma-separated list only
+        if question_type == 'skills':
+            # Remove full sentences, keep only skill terms
+            # Split by common delimiters
+            skills = []
+
+            # Split by periods, newlines, and common sentence indicators
+            parts = response_text.replace('.', ',').replace('\n', ',').replace(';', ',')
+
+            # Extract skills from comma-separated values
+            for part in parts.split(','):
+                part = part.strip()
+                # Skip empty parts, filler words, and full sentences (more than 8 words is likely a sentence)
+                if part and len(part.split()) <= 6 and not part.lower().startswith(('i ', 'the ', 'and ', 'or ')):
+                    skills.append(part)
+
+            # Return comma-separated skills
+            return ', '.join(skills) if skills else 'No'
+
+        # Job title extraction - extract only the specialty/title
+        elif question_type == 'job_title':
+            # Remove common filler words and sentences
+            text = response_text
+
+            # If it's a full sentence, try to extract just the job title
+            if len(text.split()) > 5:
+                # Look for patterns like "I am a X" or "I work as a X"
+                import re
+                patterns = [
+                    r'(?:I am|I\'m|I work as|My title is|I\'m a|I am a)\s+(?:a\s+)?(.+?)(?:\.|$|at|with|for)',
+                    r'^(.+?)(?:\s+at\s+|\s+with\s+|\s+for\s+)',  # Extract before "at/with/for"
+                ]
+
+                for pattern in patterns:
+                    match = re.search(pattern, text, re.IGNORECASE)
+                    if match:
+                        title = match.group(1).strip()
+                        # Clean up common articles
+                        title = re.sub(r'^(a|an|the)\s+', '', title, flags=re.IGNORECASE)
+                        if title and len(title.split()) <= 4:  # Reasonable title length
+                            return title
+
+            # If no pattern matched, return as-is if it's short enough
+            if len(text.split()) <= 4:
+                return text
+
+            # Otherwise, just return the first few meaningful words
+            words = text.split()[:3]
+            return ' '.join(words)
+
+        # Location formatting
+        elif question_type == 'location':
+            # Ensure format is "City, State"
+            import re
+            # Look for city, state pattern
+            match = re.search(r'([A-Za-z\s]+),\s*([A-Z]{2}|[A-Za-z\s]+)', response_text)
+            if match:
+                return f"{match.group(1).strip()}, {match.group(2).strip()}"
+            return response_text
+
+        # Default: return cleaned text (remove extra whitespace, trailing periods)
+        else:
+            # Remove excessive whitespace
+            text = ' '.join(response_text.split())
+            # Remove trailing period if it's the only one
+            if text.endswith('.') and text.count('.') == 1:
+                text = text[:-1]
+            return text
 
     def enhance_accomplishments_with_ai(self, accomplishments):
         """Use AI to enhance accomplishment descriptions."""
@@ -547,8 +785,12 @@ Enhanced accomplishments:"""
                   Example: {'pdf': 'path/to/resume.pdf', 'tex': 'path/to/resume.tex'}
         """
         try:
-            # Normalize the data format
-            resume_data = self.normalize_interview_data(json_data)
+            # Step 1: Validate and clean all responses
+            print("  Validating and cleaning interview responses...")
+            cleaned_data = self.validate_and_clean_all_responses(json_data)
+
+            # Step 2: Normalize the data format
+            resume_data = self.normalize_interview_data(cleaned_data)
 
             # Debug: Show what education data was found
             if resume_data['education']:
