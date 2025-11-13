@@ -29,7 +29,7 @@ const LandingPage: React.FC = () => {
           </button>
           <button
             onClick={() => navigate('/create-account')}
-            className="bg-white text-black font-bold py-3 px-8 rounded-full hover:opacity-80 transition-colors"
+            className="bg-white text-black font-bold py-3 px-8 rounded-full hover:opacity-80 transition-colors transform hover:scale-105"
           >
             Create Account
           </button>
