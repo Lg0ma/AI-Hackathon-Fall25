@@ -197,8 +197,6 @@ logger.info("✅ Interview Room configured")
 
 logger.info("="*60)
 
-logger.info("="*60)
-
 # --- Persistent Data Storage (using a JSON file) ---
 RESPONSES_FILE = "user_responses.json"
 
