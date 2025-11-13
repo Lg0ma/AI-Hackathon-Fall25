@@ -90,10 +90,6 @@ export const JobDescription: React.FC<JobDescriptionProps> = ({
 
                     {/* Action Buttons */}
                     <div className="flex items-center gap-3 mb-6">
-                        <button className="px-6 py-3 bg-neutral-800 hover:bg-neutral-700 rounded-lg flex items-center gap-2 transition-colors">
-                            <Bookmark className="w-5 h-5" />
-                            Save
-                        </button>
                         <button
                         onClick={openInterviewSession}
                         className="px-8 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold transition-colors">
@@ -227,10 +223,6 @@ export const JobDescription: React.FC<JobDescriptionProps> = ({
 
                 {/* Bottom Action Buttons */}
                 <div className="flex items-center gap-3 pt-6 border-t border-neutral-700 mb-30">
-                    <button className="px-8 py-3 bg-neutral-800 hover:bg-neutral-700 rounded-lg flex items-center gap-2 transition-colors">
-                        <Bookmark className="w-5 h-5" />
-                        Save
-                    </button>
                     <button
                     onClick={openDemoInterview}>
                         Start Interview Call

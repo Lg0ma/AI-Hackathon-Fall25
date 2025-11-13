@@ -9,7 +9,6 @@ interface JobCardProps {
     location: string;
     isNew?: boolean;
     companyLogo?: string;
-    onBookmark?: () => void;
     onClose?: () => void;
     onClick?: () => void;
 }
@@ -22,7 +21,6 @@ export const JobCard: React.FC<JobCardProps> = ({
     location,
     isNew = false,
     companyLogo,
-    onBookmark,
     onClose,
     onClick,
 }) => {
