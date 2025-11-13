@@ -1,12 +1,30 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Briefcase, Mail, FileText, User } from 'lucide-react';
 
 const WelcomePage: React.FC = () => {
   const navigate = useNavigate();
 
-  // Placeholder for user's name
-  const userName = "User";
+  // TODO: replace with real auth user id
+  const userId = "11111111-1111-1111-1111-111111111111";
+  const [userName, setUserName] = useState<string>("User");
+
+  useEffect(() => {
+    const fetchName = async () => {
+      try {
+        // profiles.id is auth.users.id
+        const res = await fetch(`http://localhost:8000/api/profiles/${userId}`);
+        if (res.ok) {
+          const profile = await res.json();
+          const name = [profile.first_name, profile.last_name].filter(Boolean).join(' ').trim();
+          if (name) setUserName(name);
+        }
+      } catch (e) {
+        console.error("Failed to fetch profile", e);
+      }
+    };
+    fetchName();
+  }, [userId]);
 
   const options = [
     {

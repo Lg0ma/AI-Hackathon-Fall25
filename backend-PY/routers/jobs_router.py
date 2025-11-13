@@ -8,6 +8,20 @@ from inbox_matching import match_job_to_users
 
 router = APIRouter()
 
+@router.get("/profiles/{user_id}")
+async def get_profile(user_id: str):
+    try:
+        res = supabase.table("profiles").select("id, first_name, last_name").eq("id", user_id).limit(1).execute()
+        if res.error:
+            raise HTTPException(status_code=400, detail=res.error.message)
+        if not res.data:
+            raise HTTPException(status_code=404, detail="Profile not found")
+        return res.data[0]
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.get("/jobs")
 async def get_jobs():
     try:

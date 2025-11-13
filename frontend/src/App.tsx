@@ -12,6 +12,7 @@ import JobDetailsPage from './pages/JobDetailsPage';
 import EmployerDashboard from './pages/EmployerDashboard';
 import CreateJobPosting from './pages/CreateJobPosting';
 import ManageJobs from './pages/ManageJobs';
+import ApplicantsPage from './pages/ApplicantsPage';
 import AIInterviewRoomPage from './pages/AIInterviewRoomPage';
 import ResumePage from './pages/ResumePage';
 import WelcomePage from './pages/WelcomePage'; // Import WelcomePage
@@ -39,6 +40,7 @@ function App() {
         <Route path="/employer" element={<EmployerDashboard />} />
         <Route path='/employer/create-job' element={<CreateJobPosting />} />
         <Route path='/employer/my-jobs' element={<ManageJobs />} />
+        <Route path="/employer/applicants/:jobId" element={<ApplicantsPage />} />
         <Route path="/ai-interview-room/:jobId" element={<AIInterviewRoomPage />} />
       </Routes>
     </BrowserRouter>
